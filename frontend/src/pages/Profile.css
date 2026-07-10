@@ -1,0 +1,46 @@
+.profile-page {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem 1.75rem;
+}
+
+.profile-card h2 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.profile-field {
+  margin-bottom: 1rem;
+}
+
+.profile-field label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.profile-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.profile-row .profile-field {
+  flex: 1;
+}
+
+.profile-submit {
+  width: 100%;
+  margin-top: 0.5rem;
+}
