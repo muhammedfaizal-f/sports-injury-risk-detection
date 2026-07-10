@@ -1,0 +1,123 @@
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  padding: 0 0.5rem;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--accent);
+  color: #0f0f0f;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.brand-name small {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  background: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.65rem 0.75rem;
+  border-radius: 6px;
+}
+
+.sidebar-link:hover:not(:disabled) {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.sidebar-link.active {
+  background-color: var(--accent);
+  color: #0f0f0f;
+}
+
+.sidebar-link:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.soon-tag {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  color: var(--text-secondary);
+}
+
+.sidebar-footer {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  color: #0f0f0f;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.user-name {
+  font-size: 0.9rem;
+}
+
+.sidebar-signout {
+  width: 100%;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.sidebar-signout:hover {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+}

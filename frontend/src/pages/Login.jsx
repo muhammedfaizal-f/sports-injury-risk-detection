@@ -20,7 +20,7 @@ export default function Login() {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
       localStorage.setItem('token', res.data.access_token);
-      navigate('/profile');
+      navigate('/dashboard');
     } catch (err) {
       setError('Invalid email or password');
     }
