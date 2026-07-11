@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Topbar from '../components/Topbar';
 import api from '../api';
 import './Profile.css';
 
@@ -38,57 +39,60 @@ export default function Profile() {
   };
 
   return (
-    <div className="profile-page">
-      <form className="profile-card" onSubmit={handleSubmit}>
-        <h2>Athlete Profile</h2>
+    <div className="profile-wrapper">
+      <Topbar activePage="profile" userName="Athlete" />
+      <div className="profile-page">
+        <form className="profile-card" onSubmit={handleSubmit}>
+          <h2>Athlete Profile</h2>
 
-        <div className="profile-row">
-          <div className="profile-field">
-            <label>Sport Type</label>
-            <input name="sport_type" value={form.sport_type || ''} onChange={handleChange} />
+          <div className="profile-row">
+            <div className="profile-field">
+              <label>Sport Type</label>
+              <input name="sport_type" value={form.sport_type || ''} onChange={handleChange} />
+            </div>
+            <div className="profile-field">
+              <label>Position</label>
+              <input name="position" value={form.position || ''} onChange={handleChange} />
+            </div>
           </div>
-          <div className="profile-field">
-            <label>Position</label>
-            <input name="position" value={form.position || ''} onChange={handleChange} />
+
+          <div className="profile-row">
+            <div className="profile-field">
+              <label>Age</label>
+              <input name="age" type="number" value={form.age || ''} onChange={handleChange} />
+            </div>
+            <div className="profile-field">
+              <label>Height (cm)</label>
+              <input name="height_cm" type="number" value={form.height_cm || ''} onChange={handleChange} />
+            </div>
+            <div className="profile-field">
+              <label>Weight (kg)</label>
+              <input name="weight_kg" type="number" value={form.weight_kg || ''} onChange={handleChange} />
+            </div>
           </div>
-        </div>
 
-        <div className="profile-row">
           <div className="profile-field">
-            <label>Age</label>
-            <input name="age" type="number" value={form.age || ''} onChange={handleChange} />
+            <label>Injury History</label>
+            <textarea name="injury_history" value={form.injury_history || ''} onChange={handleChange} />
           </div>
+
           <div className="profile-field">
-            <label>Height (cm)</label>
-            <input name="height_cm" type="number" value={form.height_cm || ''} onChange={handleChange} />
+            <label>Training Load</label>
+            <select name="training_load" value={form.training_load || ''} onChange={handleChange}>
+              <option value="">Select</option>
+              <option value="Low">Low</option>
+              <option value="Moderate">Moderate</option>
+              <option value="High">High</option>
+            </select>
           </div>
-          <div className="profile-field">
-            <label>Weight (kg)</label>
-            <input name="weight_kg" type="number" value={form.weight_kg || ''} onChange={handleChange} />
-          </div>
-        </div>
 
-        <div className="profile-field">
-          <label>Injury History</label>
-          <textarea name="injury_history" value={form.injury_history || ''} onChange={handleChange} />
-        </div>
+          <button type="submit" className="profile-submit">
+            {exists ? 'Update Profile' : 'Create Profile'}
+          </button>
 
-        <div className="profile-field">
-          <label>Training Load</label>
-          <select name="training_load" value={form.training_load || ''} onChange={handleChange}>
-            <option value="">Select</option>
-            <option value="Low">Low</option>
-            <option value="Moderate">Moderate</option>
-            <option value="High">High</option>
-          </select>
-        </div>
-
-        <button type="submit" className="profile-submit">
-          {exists ? 'Update Profile' : 'Create Profile'}
-        </button>
-
-        {message && <p className="success-text">{message}</p>}
-      </form>
+          {message && <p className="success-text">{message}</p>}
+        </form>
+      </div>
     </div>
   );
 }

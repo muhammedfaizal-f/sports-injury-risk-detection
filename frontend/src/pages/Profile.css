@@ -1,5 +1,8 @@
-.profile-page {
+.profile-wrapper {
   min-height: 100vh;
+}
+
+.profile-page {
   padding: 2rem 1rem;
   display: flex;
   justify-content: center;

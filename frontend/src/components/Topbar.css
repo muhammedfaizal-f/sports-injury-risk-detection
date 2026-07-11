@@ -1,0 +1,38 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.75rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.topbar-left { display: flex; align-items: center; gap: 2rem; }
+.topbar-logo { font-weight: 800; letter-spacing: 0.05em; color: var(--accent); font-size: 1.05rem; }
+.topbar-links { display: flex; gap: 0.5rem; }
+
+.topbar-link {
+  background: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.45rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.topbar-link:hover:not(:disabled) { background-color: var(--bg-input); color: var(--text-primary); }
+.topbar-link.active { color: var(--accent); background-color: rgba(34, 211, 238, 0.1); }
+.topbar-link:disabled { opacity: 0.4; cursor: default; }
+
+.topbar-right { display: flex; align-items: center; gap: 1rem; }
+.topbar-user { font-size: 0.85rem; color: var(--text-secondary); }
+
+.topbar-signout {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+}
+
+.topbar-signout:hover { background-color: var(--bg-input); color: var(--text-primary); }

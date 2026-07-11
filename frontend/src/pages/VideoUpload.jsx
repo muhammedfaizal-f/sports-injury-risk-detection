@@ -1,0 +1,132 @@
+import { useState, useEffect } from 'react';
+import Topbar from '../components/Topbar';
+import api from '../api';
+import './VideoUpload.css';
+
+const ACTIVITIES = ['Running', 'Sprinting', 'Jumping', 'Squatting', 'Landing', 'Throwing', 'Cutting Movement'];
+
+const STATUS_STYLES = {
+  uploaded: 'status-pending',
+  processing: 'status-processing',
+  processed: 'status-done',
+  invalid: 'status-error',
+};
+
+export default function VideoUpload() {
+  const [file, setFile] = useState(null);
+  const [activity, setActivity] = useState(ACTIVITIES[0]);
+  const [videos, setVideos] = useState([]);
+  const [message, setMessage] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [processingId, setProcessingId] = useState(null);
+
+  const loadVideos = () => {
+    api.get('/videos/mine').then((res) => setVideos(res.data));
+  };
+
+  useEffect(() => { loadVideos(); }, []);
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!file) return setMessage('Choose a video file first');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('activity_type', activity);
+
+    setUploading(true);
+    setMessage('');
+    try {
+      await api.post('/videos/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setMessage('Uploaded successfully');
+      setFile(null);
+      loadVideos();
+    } catch (err) {
+      setMessage(err.response?.data?.detail || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleProcess = async (videoId) => {
+    setProcessingId(videoId);
+    setMessage('');
+    try {
+      const res = await api.post(`/videos/${videoId}/process`);
+      setMessage(`Processed — ${res.data.frames_extracted} frames extracted`);
+      loadVideos();
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      if (detail?.issues) {
+        setMessage(`Rejected: ${detail.issues.join('; ')}`);
+      } else {
+        setMessage(detail || 'Processing failed');
+      }
+      loadVideos();
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  return (
+    <div className="video-page">
+      <Topbar activePage="videos" userName="Athlete" />
+
+      <main className="video-main">
+        <section className="upload-panel">
+          <h2>Upload a movement clip</h2>
+          <p className="upload-hint">
+            5–15 seconds, good lighting, full body in frame. Landing, jumping, and
+            sprinting clips give the most useful analysis once pose estimation is live.
+          </p>
+
+          <form onSubmit={handleUpload} className="upload-form">
+            <div className="upload-dropzone">
+              <input
+                type="file"
+                accept="video/mp4,video/quicktime,video/x-msvideo"
+                onChange={(e) => setFile(e.target.files[0])}
+              />
+              <span>{file ? file.name : 'Click or drag a video file here'}</span>
+            </div>
+
+            <select value={activity} onChange={(e) => setActivity(e.target.value)}>
+              {ACTIVITIES.map((a) => (<option key={a} value={a}>{a}</option>))}
+            </select>
+
+            <button type="submit" disabled={uploading}>
+              {uploading ? 'Uploading...' : 'Upload Video'}
+            </button>
+          </form>
+
+          {message && <p className="upload-message">{message}</p>}
+        </section>
+
+        <section className="video-list-panel">
+          <h2>Your uploads</h2>
+          {videos.length === 0 && <p className="empty-state">No videos uploaded yet.</p>}
+
+          <div className="video-list">
+            {videos.map((v) => (
+              <div className="video-row" key={v.id}>
+                <div className="video-row-info">
+                  <span className="video-activity">{v.activity_type}</span>
+                  <span className={`video-status ${STATUS_STYLES[v.status] || ''}`}>{v.status}</span>
+                </div>
+                <button
+                  className="process-btn"
+                  disabled={v.status === 'processed' || processingId === v.id}
+                  onClick={() => handleProcess(v.id)}
+                >
+                  {processingId === v.id ? 'Processing...' : v.status === 'processed' ? 'Done' : 'Process'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

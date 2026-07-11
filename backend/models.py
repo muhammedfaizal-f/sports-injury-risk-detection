@@ -1,8 +1,9 @@
+import enum
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, ForeignKey, Numeric, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
-import enum
+
 
 class UserRole(str, enum.Enum):
     athlete = "athlete"
@@ -10,6 +11,7 @@ class UserRole(str, enum.Enum):
     physiotherapist = "physiotherapist"
     sports_scientist = "sports_scientist"
     admin = "admin"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -23,6 +25,7 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     athlete_profile = relationship("Athlete", back_populates="user", uselist=False)
+
 
 class Athlete(Base):
     __tablename__ = "athletes"
@@ -38,3 +41,14 @@ class Athlete(Base):
     training_load = Column(String(50))
 
     user = relationship("User", back_populates="athlete_profile")
+
+
+class Video(Base):
+    __tablename__ = "videos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    athlete_id = Column(Integer, ForeignKey("athletes.id"), nullable=False)
+    file_path = Column(String(255), nullable=False)
+    activity_type = Column(String(50))
+    status = Column(String(20), default="uploaded")
+    uploaded_at = Column(DateTime, server_default=func.now())

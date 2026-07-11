@@ -63,8 +63,6 @@ def get_athlete_by_id(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Coaches, physios, sports scientists, admins can view any athlete profile.
-    # Athletes can only view their own — already covered by /me above.
     if current_user.role == UserRole.athlete:
         raise HTTPException(status_code=403, detail="Athletes can only view their own profile via /athletes/me")
 
