@@ -1,12 +1,14 @@
 import os
+import glob
 import shutil
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Form
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Video, Athlete, User, UserRole
-from schemas import VideoOut
+from models import Video, PoseResult, Athlete, User, UserRole
+from schemas import VideoOut, PoseResultOut
 from dependencies import get_current_user
 from video_processing import get_video_metadata, validate_video, extract_frames
+from pose_estimation import estimate_pose_on_frames, save_annotated_sample
 
 router = APIRouter(prefix="/videos", tags=["videos"])
 
@@ -116,3 +118,86 @@ def process_video(
         "metadata": metadata,
         "frames_extracted": len(frame_paths),
     }
+
+
+@router.post("/{video_id}/estimate-pose")
+def estimate_pose(
+    video_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Runs MediaPipe pose detection on the frames already extracted for this
+    video (requires /process to have run first). Stores keypoints per frame
+    and saves one annotated sample frame for visual verification.
+    """
+    video = _get_owned_video(video_id, current_user, db)
+
+    if video.status != "processed":
+        raise HTTPException(
+            status_code=400,
+            detail="Video must be processed (frames extracted) before pose estimation. Call /process first.",
+        )
+
+    frames_dir = os.path.join(FRAMES_DIR, f"video_{video.id}")
+    if not os.path.isdir(frames_dir):
+        raise HTTPException(status_code=400, detail="No extracted frames found for this video")
+
+    frame_paths = sorted(glob.glob(os.path.join(frames_dir, "*.jpg")))
+    if not frame_paths:
+        raise HTTPException(status_code=400, detail="No frames available to analyze")
+
+    pose_data = estimate_pose_on_frames(frame_paths)
+
+    if not pose_data:
+        raise HTTPException(
+            status_code=422,
+            detail="No person detected in any extracted frame — try a clearer video with the full body visible",
+        )
+
+    # Save one annotated sample frame (middle of the detected sequence) for
+    # visual sanity-checking that the skeleton is actually being tracked.
+    annotated_dir = os.path.join(FRAMES_DIR, f"video_{video.id}_annotated")
+    os.makedirs(annotated_dir, exist_ok=True)
+    mid_entry = pose_data[len(pose_data) // 2]
+    sample_frame_path = frame_paths[mid_entry["frame"]]
+    save_annotated_sample(sample_frame_path, os.path.join(annotated_dir, "sample_annotated.jpg"))
+
+    pose_result = PoseResult(
+        video_id=video.id,
+        frame_count=len(pose_data),
+        keypoints_json=pose_data,
+    )
+    db.add(pose_result)
+    video.status = "pose_estimated"
+    db.commit()
+    db.refresh(pose_result)
+
+    return {
+        "video_id": video.id,
+        "status": video.status,
+        "total_frames_analyzed": len(frame_paths),
+        "frames_with_pose_detected": len(pose_data),
+        "detection_rate": round(len(pose_data) / len(frame_paths), 2),
+        "pose_result_id": pose_result.id,
+    }
+
+
+@router.get("/{video_id}/pose", response_model=PoseResultOut)
+def get_pose_result(
+    video_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    video = _get_owned_video(video_id, current_user, db)
+
+    pose_result = (
+        db.query(PoseResult)
+        .filter(PoseResult.video_id == video.id)
+        .order_by(PoseResult.id.desc())
+        .first()
+    )
+    if not pose_result:
+        raise HTTPException(status_code=404, detail="No pose estimation results yet — run /estimate-pose first")
+
+    return pose_result
