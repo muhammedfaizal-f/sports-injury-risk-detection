@@ -1,31 +1,82 @@
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.9rem 1.75rem;
-  background-color: var(--bg-secondary);
+  background-color: rgba(19, 27, 44, 0.85);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
 }
 
-.topbar-left { display: flex; align-items: center; gap: 2rem; }
-.topbar-logo { font-weight: 800; letter-spacing: 0.05em; color: var(--accent); font-size: 1.05rem; }
-.topbar-links { display: flex; gap: 0.5rem; }
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 2.25rem;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+}
+
+.logo-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.topbar-links {
+  display: flex;
+  gap: 0.3rem;
+}
 
 .topbar-link {
   background: none;
   color: var(--text-secondary);
   font-weight: 500;
-  padding: 0.45rem 0.8rem;
-  border-radius: 6px;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
+  position: relative;
 }
 
-.topbar-link:hover:not(:disabled) { background-color: var(--bg-input); color: var(--text-primary); }
-.topbar-link.active { color: var(--accent); background-color: rgba(34, 211, 238, 0.1); }
-.topbar-link:disabled { opacity: 0.4; cursor: default; }
+.topbar-link:hover:not(:disabled) {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  transform: none;
+  box-shadow: none;
+}
 
-.topbar-right { display: flex; align-items: center; gap: 1rem; }
-.topbar-user { font-size: 0.85rem; color: var(--text-secondary); }
+.topbar-link.active {
+  color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.topbar-link:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topbar-user {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
 
 .topbar-signout {
   background-color: transparent;
@@ -35,4 +86,115 @@
   font-size: 0.8rem;
 }
 
-.topbar-signout:hover { background-color: var(--bg-input); color: var(--text-primary); }
+.topbar-signout:hover {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Hamburger — hidden on desktop */
+.topbar-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  padding: 0;
+}
+
+.topbar-hamburger:hover {
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
+.topbar-hamburger span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background-color: var(--text-primary);
+  border-radius: 2px;
+  transition: transform var(--transition-base), opacity var(--transition-base);
+}
+
+.topbar-hamburger.open span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.topbar-hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.topbar-hamburger.open span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.topbar-mobile-menu {
+  display: none;
+}
+
+@media (max-width: 800px) {
+
+  .topbar-links--desktop,
+  .topbar-right--desktop {
+    display: none;
+  }
+
+  .topbar-hamburger {
+    display: flex;
+  }
+
+  .topbar-mobile-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    flex-direction: column;
+    padding: 0.5rem;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height var(--transition-base), opacity var(--transition-base);
+  }
+
+  .topbar-mobile-menu.open {
+    display: flex;
+    max-height: 400px;
+    opacity: 1;
+  }
+
+  .topbar-mobile-link {
+    background: none;
+    text-align: left;
+    color: var(--text-secondary);
+    padding: 0.75rem 0.85rem;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+  }
+
+  .topbar-mobile-link:hover {
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .topbar-mobile-link.active {
+    color: var(--accent);
+    background-color: var(--accent-soft);
+  }
+
+  .topbar-mobile-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: 0.4rem;
+  }
+}

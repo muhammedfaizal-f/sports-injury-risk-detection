@@ -27,19 +27,19 @@ export default function Dashboard() {
       <Topbar activePage="overview" userName="Athlete" />
 
       <main className="dashboard-main">
-        <div className="dashboard-header">
+        <div className="dashboard-header fade-in-up">
           <h1>Welcome back</h1>
           <p className="dashboard-subtitle">{today}</p>
         </div>
 
         {hasProfile === false && (
-          <div className="dashboard-alert">
+          <div className="dashboard-alert fade-in-up stagger" style={{ '--delay': '0.05s' }}>
             You haven't set up your athlete profile yet.{' '}
             <a href="/profile">Complete it here</a> to start uploading videos.
           </div>
         )}
 
-        <div className="stat-strip">
+        <div className="stat-strip fade-in-up stagger" style={{ '--delay': '0.1s' }}>
           {stats.map((s) => (
             <div className="stat-item" key={s.label}>
               <span className="stat-value">{s.value}</span>
@@ -49,11 +49,11 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="dashboard-panel">
+        <div className="dashboard-panel fade-in-up stagger" style={{ '--delay': '0.18s' }}>
           <h3>Recent Uploads</h3>
           <p className="panel-empty">
-            Go to <a href="/videos">Videos</a> to upload and process a clip. Pose
-            estimation and risk scoring will appear here in later milestones.
+            Go to <a href="/videos">Videos</a> to upload and process a clip, then view
+            results in <a href="/analysis">Analysis</a>.
           </p>
         </div>
       </main>

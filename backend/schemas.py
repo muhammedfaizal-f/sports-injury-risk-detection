@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, Any
 from decimal import Decimal
 from models import UserRole
 
@@ -59,6 +59,15 @@ class VideoOut(BaseModel):
     file_path: str
     activity_type: Optional[str] = None
     status: str
+
+    class Config:
+        from_attributes = True
+
+class PoseResultOut(BaseModel):
+    id: int
+    video_id: int
+    frame_count: Optional[int] = None
+    keypoints_json: Optional[Any] = None
 
     class Config:
         from_attributes = True

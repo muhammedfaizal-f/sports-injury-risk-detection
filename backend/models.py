@@ -1,5 +1,6 @@
 import enum
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum, ForeignKey, Numeric, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -52,3 +53,13 @@ class Video(Base):
     activity_type = Column(String(50))
     status = Column(String(20), default="uploaded")
     uploaded_at = Column(DateTime, server_default=func.now())
+
+
+class PoseResult(Base):
+    __tablename__ = "pose_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    video_id = Column(Integer, ForeignKey("videos.id"), nullable=False)
+    frame_count = Column(Integer)
+    keypoints_json = Column(JSONB)
+    created_at = Column(DateTime, server_default=func.now())

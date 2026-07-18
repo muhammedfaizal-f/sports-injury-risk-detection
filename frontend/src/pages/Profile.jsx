@@ -42,7 +42,7 @@ export default function Profile() {
     <div className="profile-wrapper">
       <Topbar activePage="profile" userName="Athlete" />
       <div className="profile-page">
-        <form className="profile-card" onSubmit={handleSubmit}>
+        <form className="profile-card fade-in-up" onSubmit={handleSubmit}>
           <h2>Athlete Profile</h2>
 
           <div className="profile-row">
