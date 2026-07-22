@@ -60,6 +60,13 @@ CREATE TABLE pose_results (
     created_at      TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE biomechanics_results (
+    id              SERIAL PRIMARY KEY,
+    video_id        INTEGER NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+    analysis_json   JSONB,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
+
 -- ============================================================
 -- STUB — Milestone 3
 -- ============================================================
