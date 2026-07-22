@@ -71,3 +71,11 @@ class PoseResultOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class BiomechanicsResultOut(BaseModel):
+    id: int
+    video_id: int
+    analysis_json: Optional[Any] = None
+
+    class Config:
+        from_attributes = True

@@ -4,11 +4,12 @@ import shutil
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Form
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Video, PoseResult, Athlete, User, UserRole
-from schemas import VideoOut, PoseResultOut
+from models import Video, PoseResult, BiomechanicsResult, Athlete, User, UserRole
+from schemas import VideoOut, PoseResultOut, BiomechanicsResultOut
 from dependencies import get_current_user
 from video_processing import get_video_metadata, validate_video, extract_frames
 from pose_estimation import estimate_pose_on_frames, save_annotated_sample
+from biomechanics import analyze_pose_sequence
 
 router = APIRouter(prefix="/videos", tags=["videos"])
 
@@ -201,3 +202,72 @@ def get_pose_result(
         raise HTTPException(status_code=404, detail="No pose estimation results yet — run /estimate-pose first")
 
     return pose_result
+
+@router.post("/{video_id}/analyze-biomechanics")
+def analyze_biomechanics(
+    video_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Computes joint angles, range of motion, and left/right symmetry from
+    the stored pose keypoints. Requires /estimate-pose to have run first.
+    """
+    video = _get_owned_video(video_id, current_user, db)
+
+    if video.status != "pose_estimated":
+        raise HTTPException(
+            status_code=400,
+            detail="Video must have pose estimation completed first. Call /estimate-pose.",
+        )
+
+    pose_result = (
+        db.query(PoseResult)
+        .filter(PoseResult.video_id == video.id)
+        .order_by(PoseResult.id.desc())
+        .first()
+    )
+    if not pose_result or not pose_result.keypoints_json:
+        raise HTTPException(status_code=404, detail="No pose data found for this video")
+
+    analysis = analyze_pose_sequence(pose_result.keypoints_json)
+
+    if not analysis["joint_summary"]:
+        raise HTTPException(
+            status_code=422,
+            detail="Could not compute joint angles — key landmarks weren't visible enough across frames",
+        )
+
+    biomech_result = BiomechanicsResult(video_id=video.id, analysis_json=analysis)
+    db.add(biomech_result)
+    video.status = "biomechanics_analyzed"
+    db.commit()
+    db.refresh(biomech_result)
+
+    return {
+        "video_id": video.id,
+        "status": video.status,
+        "biomechanics_result_id": biomech_result.id,
+        "joints_analyzed": list(analysis["joint_summary"].keys()),
+        "symmetry": analysis["symmetry"],
+    }
+
+
+@router.get("/{video_id}/biomechanics", response_model=BiomechanicsResultOut)
+def get_biomechanics_result(
+    video_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    video = _get_owned_video(video_id, current_user, db)
+
+    result = (
+        db.query(BiomechanicsResult)
+        .filter(BiomechanicsResult.video_id == video.id)
+        .order_by(BiomechanicsResult.id.desc())
+        .first()
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="No biomechanics analysis yet — run /analyze-biomechanics first")
+
+    return result
