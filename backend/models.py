@@ -64,10 +64,21 @@ class PoseResult(Base):
     keypoints_json = Column(JSONB)
     created_at = Column(DateTime, server_default=func.now())
 
-    class BiomechanicsResult(Base):
+
+class BiomechanicsResult(Base):
     __tablename__ = "biomechanics_results"
 
     id = Column(Integer, primary_key=True, index=True)
     video_id = Column(Integer, ForeignKey("videos.id"), nullable=False)
     analysis_json = Column(JSONB)
+    created_at = Column(DateTime, server_default=func.now())
+
+class QualityReport(Base):
+    __tablename__ = "quality_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    video_id = Column(Integer, ForeignKey("videos.id"), nullable=False)
+    quality_score = Column(Numeric(5, 2))
+    risk_category = Column(String(20))
+    report_json = Column(JSONB)
     created_at = Column(DateTime, server_default=func.now())
