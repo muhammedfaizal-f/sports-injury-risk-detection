@@ -72,10 +72,22 @@ class PoseResultOut(BaseModel):
     class Config:
         from_attributes = True
 
+
 class BiomechanicsResultOut(BaseModel):
     id: int
     video_id: int
     analysis_json: Optional[Any] = None
+
+    class Config:
+        from_attributes = True
+
+
+class QualityReportOut(BaseModel):
+    id: int
+    video_id: int
+    quality_score: Optional[Decimal] = None
+    risk_category: Optional[str] = None
+    report_json: Optional[Any] = None
 
     class Config:
         from_attributes = True

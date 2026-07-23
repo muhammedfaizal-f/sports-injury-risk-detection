@@ -39,11 +39,11 @@ export default function Analysis() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    // Simulates a fetch delay so the loading state / animation is visible.
-    // Swap this block for: api.get(`/videos/${videoId}/analysis`).then(res => setData(res.data))
-    const timer = setTimeout(() => setData(mockAnalysis), 400);
-    return () => clearTimeout(timer);
-  }, [videoId]);
+  if (!videoId) return;
+  api.get(`/videos/${videoId}/report`)
+    .then((res) => setData(res.data))
+    .catch(() => setData(mockAnalysis)); // fallback if this video hasn't been analyzed yet
+}, [videoId]);
 
   const circumference = 2 * Math.PI * 60;
   const scoreOffset = data ? circumference - (data.quality_score / 100) * circumference : circumference;

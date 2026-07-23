@@ -9,7 +9,10 @@ const ACTIVITIES = ['Running', 'Sprinting', 'Jumping', 'Squatting', 'Landing', '
 const STATUS_STYLES = {
   uploaded: 'status-pending',
   processing: 'status-processing',
-  processed: 'status-done',
+  processed: 'status-processing',
+  pose_estimated: 'status-processing',
+  biomechanics_analyzed: 'status-processing',
+  analyzed: 'status-done',
   invalid: 'status-error',
 };
 
@@ -56,12 +59,12 @@ export default function VideoUpload() {
     setProcessingId(videoId);
     setMessage('');
     try {
-      const res = await api.post(`/videos/${videoId}/process`);
-      setMessage(`Processed — ${res.data.frames_extracted} frames extracted`);
+      const res = await api.post(`/videos/${videoId}/analyze-full`);
+      setMessage(`Analysis complete — quality score ${res.data.quality_score}/100`);
       loadVideos();
     } catch (err) {
       const detail = err.response?.data?.detail;
-      setMessage(detail?.issues ? `Rejected: ${detail.issues.join('; ')}` : detail || 'Processing failed');
+      setMessage(detail?.issues ? `Rejected: ${detail.issues.join('; ')}` : detail || 'Analysis failed');
       loadVideos();
     } finally {
       setProcessingId(null);
@@ -117,12 +120,12 @@ export default function VideoUpload() {
                 <div className="video-row-actions">
                   <button
                     className="process-btn"
-                    disabled={v.status === 'processed' || processingId === v.id}
+                    disabled={v.status === 'analyzed' || processingId === v.id}
                     onClick={() => handleProcess(v.id)}
                   >
-                    {processingId === v.id ? <span className="spinner" /> : v.status === 'processed' ? 'Done' : 'Process'}
+                    {processingId === v.id ? <span className="spinner" /> : v.status === 'analyzed' ? 'Done' : 'Analyze'}
                   </button>
-                  {v.status === 'processed' && (
+                  {v.status === 'analyzed' && (
                     <button className="view-btn" onClick={() => navigate(`/analysis?video=${v.id}`)}>
                       View Analysis
                     </button>
