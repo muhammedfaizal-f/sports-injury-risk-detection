@@ -91,3 +91,14 @@ class QualityReportOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class RiskPredictionOut(BaseModel):
+    id: int
+    video_id: int
+    risk_score: float
+    risk_category: str
+    injury_type: str
+    factors_json: Optional[Any] = None
+
+    class Config:
+        from_attributes = True
