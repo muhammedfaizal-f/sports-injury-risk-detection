@@ -10,10 +10,11 @@
 
 .profile-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
+  box-shadow: var(--shadow-card);
   padding: 2rem 1.75rem;
 }
 
@@ -46,4 +47,11 @@
 .profile-submit {
   width: 100%;
   margin-top: 0.5rem;
+}
+
+@media (max-width: 480px) {
+  .profile-row {
+    flex-direction: column;
+    gap: 0;
+  }
 }

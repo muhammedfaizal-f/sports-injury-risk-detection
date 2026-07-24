@@ -14,40 +14,23 @@ Infosys Springboard Virtual Internship (June–Aug 2026).
 
 ## Milestone Status
 - [x] Milestone 1: Setup, auth, athlete profiles, dataset prep
-- [ ] Milestone 2: Pose estimation, biomechanical analysis (in progress)
-- [ ] Milestone 3: Injury prediction & recommendations
+- [x] Milestone 2: Pose estimation, biomechanical analysis, movement quality scoring
+- [ ] Milestone 3: Injury prediction & recommendations (ML-based)
 - [ ] Milestone 4: Dashboards, testing, deployment
+
+## Milestone 2 — What's Implemented
+- Video upload with quality validation (resolution, duration, fps)
+- Frame extraction via OpenCV (~5fps sampling)
+- Pose estimation via MediaPipe (33-point body landmark detection)
+- Biomechanical analysis: joint angles (knee, hip, elbow), trunk lean,
+  range of motion, left/right symmetry scoring
+- Movement Quality Score (0-100) — heuristic based on symmetry, detection
+  completeness, and joint coverage (NOT yet an ML-trained injury risk model
+  — that's Milestone 3)
+- Rule-based corrective recommendations from symmetry gaps
+- Single `/analyze-full` endpoint chaining the whole pipeline
+- Frontend Analysis page rendering real pipeline output
 
 ## Setup
 
 ### Backend
-```
-cd backend
-python3 -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env           # then fill in DATABASE_URL and SECRET_KEY
-uvicorn main:app --reload --port 8000
-```
-Docs at http://localhost:8000/docs
-
-### Database
-```
-createdb sports_injury_db
-psql sports_injury_db < db/schema.sql
-```
-
-### Frontend
-```
-cd frontend
-npm install
-npm run dev
-```
-Runs at http://localhost:5173
-
-## API Overview
-- POST /auth/register, /auth/login
-- GET/POST/PUT /athletes/me, GET /athletes/{id}
-- POST /videos/upload, GET /videos/mine, POST /videos/{id}/process
-
-

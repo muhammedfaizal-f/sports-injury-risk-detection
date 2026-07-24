@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 import api from '../api';
 import './VideoUpload.css';
@@ -8,7 +9,10 @@ const ACTIVITIES = ['Running', 'Sprinting', 'Jumping', 'Squatting', 'Landing', '
 const STATUS_STYLES = {
   uploaded: 'status-pending',
   processing: 'status-processing',
-  processed: 'status-done',
+  processed: 'status-processing',
+  pose_estimated: 'status-processing',
+  biomechanics_analyzed: 'status-processing',
+  analyzed: 'status-done',
   invalid: 'status-error',
 };
 
@@ -19,6 +23,7 @@ export default function VideoUpload() {
   const [message, setMessage] = useState('');
   const [uploading, setUploading] = useState(false);
   const [processingId, setProcessingId] = useState(null);
+  const navigate = useNavigate();
 
   const loadVideos = () => {
     api.get('/videos/mine').then((res) => setVideos(res.data));
@@ -54,16 +59,12 @@ export default function VideoUpload() {
     setProcessingId(videoId);
     setMessage('');
     try {
-      const res = await api.post(`/videos/${videoId}/process`);
-      setMessage(`Processed — ${res.data.frames_extracted} frames extracted`);
+      const res = await api.post(`/videos/${videoId}/analyze-full`);
+      setMessage(`Analysis complete — quality score ${res.data.quality_score}/100`);
       loadVideos();
     } catch (err) {
       const detail = err.response?.data?.detail;
-      if (detail?.issues) {
-        setMessage(`Rejected: ${detail.issues.join('; ')}`);
-      } else {
-        setMessage(detail || 'Processing failed');
-      }
+      setMessage(detail?.issues ? `Rejected: ${detail.issues.join('; ')}` : detail || 'Analysis failed');
       loadVideos();
     } finally {
       setProcessingId(null);
@@ -75,7 +76,7 @@ export default function VideoUpload() {
       <Topbar activePage="videos" userName="Athlete" />
 
       <main className="video-main">
-        <section className="upload-panel">
+        <section className="upload-panel fade-in-up">
           <h2>Upload a movement clip</h2>
           <p className="upload-hint">
             5–15 seconds, good lighting, full body in frame. Landing, jumping, and
@@ -83,45 +84,53 @@ export default function VideoUpload() {
           </p>
 
           <form onSubmit={handleUpload} className="upload-form">
-            <div className="upload-dropzone">
+            <div className={`upload-dropzone ${file ? 'has-file' : ''}`}>
               <input
                 type="file"
                 accept="video/mp4,video/quicktime,video/x-msvideo"
                 onChange={(e) => setFile(e.target.files[0])}
               />
-              <span>{file ? file.name : 'Click or drag a video file here'}</span>
+              <span>{file ? `✓ ${file.name}` : 'Click or drag a video file here'}</span>
             </div>
 
-            <select value={activity} onChange={(e) => setActivity(e.target.value)}>
-              {ACTIVITIES.map((a) => (<option key={a} value={a}>{a}</option>))}
-            </select>
-
-            <button type="submit" disabled={uploading}>
-              {uploading ? 'Uploading...' : 'Upload Video'}
-            </button>
+            <div className="upload-form-row">
+              <select value={activity} onChange={(e) => setActivity(e.target.value)}>
+                {ACTIVITIES.map((a) => (<option key={a} value={a}>{a}</option>))}
+              </select>
+              <button type="submit" disabled={uploading}>
+                {uploading ? (<><span className="spinner" /> Uploading...</>) : 'Upload Video'}
+              </button>
+            </div>
           </form>
 
           {message && <p className="upload-message">{message}</p>}
         </section>
 
-        <section className="video-list-panel">
+        <section className="video-list-panel fade-in-up stagger" style={{ '--delay': '0.1s' }}>
           <h2>Your uploads</h2>
           {videos.length === 0 && <p className="empty-state">No videos uploaded yet.</p>}
 
           <div className="video-list">
-            {videos.map((v) => (
-              <div className="video-row" key={v.id}>
+            {videos.map((v, i) => (
+              <div className="video-row stagger" style={{ '--delay': `${i * 0.05}s` }} key={v.id}>
                 <div className="video-row-info">
                   <span className="video-activity">{v.activity_type}</span>
                   <span className={`video-status ${STATUS_STYLES[v.status] || ''}`}>{v.status}</span>
                 </div>
-                <button
-                  className="process-btn"
-                  disabled={v.status === 'processed' || processingId === v.id}
-                  onClick={() => handleProcess(v.id)}
-                >
-                  {processingId === v.id ? 'Processing...' : v.status === 'processed' ? 'Done' : 'Process'}
-                </button>
+                <div className="video-row-actions">
+                  <button
+                    className="process-btn"
+                    disabled={v.status === 'analyzed' || processingId === v.id}
+                    onClick={() => handleProcess(v.id)}
+                  >
+                    {processingId === v.id ? <span className="spinner" /> : v.status === 'analyzed' ? 'Done' : 'Analyze'}
+                  </button>
+                  {v.status === 'analyzed' && (
+                    <button className="view-btn" onClick={() => navigate(`/analysis?video=${v.id}`)}>
+                      View Analysis
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

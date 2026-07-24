@@ -60,6 +60,33 @@ CREATE TABLE pose_results (
     created_at      TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE biomechanics_results (
+    id              SERIAL PRIMARY KEY,
+    video_id        INTEGER NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+    analysis_json   JSONB,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE pose_results ADD COLUMN total_frames INTEGER;
+
+CREATE TABLE quality_reports (
+    id              SERIAL PRIMARY KEY,
+    video_id        INTEGER NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+    quality_score   NUMERIC(5,2),
+    risk_category   VARCHAR(20),
+    report_json     JSONB,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE risk_predictions (
+    id              SERIAL PRIMARY KEY,
+    video_id        INTEGER NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+    risk_score      NUMERIC(5,2),
+    risk_category   VARCHAR(20),
+    injury_type     VARCHAR(50),
+    factors_json    JSONB,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
 -- ============================================================
 -- STUB — Milestone 3
 -- ============================================================
