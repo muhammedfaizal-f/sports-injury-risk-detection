@@ -83,3 +83,14 @@ class QualityReport(Base):
     risk_category = Column(String(20))
     report_json = Column(JSONB)
     created_at = Column(DateTime, server_default=func.now())
+
+class RiskPrediction(Base):
+    __tablename__ = "risk_predictions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    video_id = Column(Integer, ForeignKey("videos.id"), nullable=False)
+    risk_score = Column(Numeric(5, 2))
+    risk_category = Column(String(20))
+    injury_type = Column(String(50))
+    factors_json = Column(JSONB)
+    created_at = Column(DateTime, server_default=func.now())

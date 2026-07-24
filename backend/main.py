@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
 import models
 
-from routers import auth, athletes, videos
+from routers import auth, athletes, videos, risk
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Sports Injury Risk Detection API")
@@ -19,7 +19,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(athletes.router)
 app.include_router(videos.router)
-
+app.include_router(risk.router)
 
 @app.get("/")
 def read_root():
