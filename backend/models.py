@@ -94,3 +94,10 @@ class RiskPrediction(Base):
     injury_type = Column(String(50))
     factors_json = Column(JSONB)
     created_at = Column(DateTime, server_default=func.now())
+
+class CoachAthlete(Base):
+    __tablename__ = "coach_athlete"
+
+    id = Column(Integer, primary_key=True, index=True)
+    coach_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    athlete_id = Column(Integer, ForeignKey("athletes.id"), nullable=False)

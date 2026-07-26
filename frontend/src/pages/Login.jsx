@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import { decodeToken } from '../utils/auth';
 import './AuthPage.css';
 
 export default function Login() {
@@ -10,21 +11,40 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const form = new URLSearchParams();
-      form.append('username', email);
-      form.append('password', password);
+  e.preventDefault();
 
-      const res = await api.post('/auth/login', form, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      });
-      localStorage.setItem('token', res.data.access_token);
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Invalid email or password');
-    }
-  };
+  try {
+    const form = new URLSearchParams();
+    form.append("username", email);
+    form.append("password", password);
+
+    const res = await api.post("/auth/login", form, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    // Save JWT token
+    localStorage.setItem("token", res.data.access_token);
+
+    // Decode JWT
+    const decoded = decodeToken(res.data.access_token);
+
+    // Redirect based on role
+    const roleRoutes = {
+      athlete: "/dashboard",
+      coach: "/coach-dashboard",
+      physiotherapist: "/physio-dashboard",
+      sports_scientist: "/scientist-dashboard",
+      admin: "/admin-dashboard",
+    };
+
+    navigate(roleRoutes[decoded?.role] || "/dashboard");
+  } catch (err) {
+    console.error(err);
+    setError("Invalid email or password");
+  }
+};
 
   return (
     <div className="auth-page">

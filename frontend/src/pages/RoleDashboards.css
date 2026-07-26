@@ -1,0 +1,199 @@
+.role-dashboard-page {
+    min-height: 100vh;
+}
+
+.role-main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.role-header h1 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem;
+}
+
+.role-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.role-stat-strip {
+    display: flex;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    flex-wrap: wrap;
+}
+
+.role-stat-item {
+    flex: 1;
+    min-width: 140px;
+    padding: 1.1rem 1.4rem;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.role-stat-item:last-child {
+    border-right: none;
+}
+
+.role-stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.role-stat-label {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.role-panel {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+    padding: 1.5rem;
+}
+
+.role-panel h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+}
+
+.role-empty {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.role-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.role-table th {
+    text-align: left;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.role-table td {
+    padding: 0.65rem 0.6rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.role-table tr:last-child td {
+    border-bottom: none;
+}
+
+.risk-pill {
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.risk-pill.low {
+    background-color: var(--success-soft);
+    color: var(--risk-low);
+}
+
+.risk-pill.moderate {
+    background-color: var(--warning-soft);
+    color: var(--risk-moderate);
+}
+
+.risk-pill.high {
+    background-color: rgba(249, 115, 22, 0.12);
+    color: var(--risk-high);
+}
+
+.risk-pill.critical {
+    background-color: var(--error-soft);
+    color: var(--risk-critical);
+}
+
+.risk-pill.none {
+    background-color: var(--bg-input);
+    color: var(--text-muted);
+}
+
+.distribution-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.distribution-bar-label {
+    width: 110px;
+    font-size: 0.82rem;
+    flex-shrink: 0;
+}
+
+.distribution-bar-track {
+    flex: 1;
+    height: 10px;
+    background-color: var(--bg-input);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.distribution-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--teal));
+    border-radius: 999px;
+    transition: width 0.6s ease;
+}
+
+.distribution-bar-count {
+    width: 32px;
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.link-form {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.link-form input {
+    max-width: 180px;
+}
+
+.link-form button {
+    min-width: 140px;
+}
+
+@media (max-width: 700px) {
+    .role-stat-strip {
+        flex-direction: column;
+    }
+
+    .role-stat-item {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .role-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}

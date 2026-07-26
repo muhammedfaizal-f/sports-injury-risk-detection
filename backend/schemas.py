@@ -102,3 +102,16 @@ class RiskPredictionOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class LinkAthleteRequest(BaseModel):
+    athlete_id: int
+
+
+class AthleteRiskSummary(BaseModel):
+    athlete_id: int
+    full_name: str
+    sport_type: Optional[str] = None
+    latest_risk_score: Optional[float] = None
+    latest_risk_category: Optional[str] = None
+    latest_injury_type: Optional[str] = None
+    videos_analyzed: int
