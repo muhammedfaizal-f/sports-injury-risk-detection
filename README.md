@@ -32,5 +32,6 @@ Infosys Springboard Virtual Internship (June–Aug 2026).
 - Frontend Analysis page rendering real pipeline output
 
 ## Setup
-
+ 
+ 
 ### Backend 
