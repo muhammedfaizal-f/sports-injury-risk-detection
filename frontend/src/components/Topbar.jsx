@@ -15,6 +15,7 @@ export default function Topbar({ activePage, userName }) {
     { key: 'overview', label: 'Overview', path: '/dashboard' },
     { key: 'videos', label: 'Videos', path: '/videos' },
     { key: 'analysis', label: 'Analysis', path: '/analysis' },
+    { key: 'risk', label: 'Risk Reports', path: '/risk' },
     { key: 'profile', label: 'My Profile', path: '/profile' },
   ];
 

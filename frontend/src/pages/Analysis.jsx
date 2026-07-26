@@ -174,6 +174,12 @@ export default function Analysis() {
                   ))}
                 </ul>
               </div>
+              <div className="panel">
+                <h3>Next Step</h3>
+                <p className="panel-empty">
+                  See the full <a href={`/risk?video=${videoId}`}>Injury Risk Report</a> for this video.
+                </p>
+              </div>
             </div>
           </div>
         )}
