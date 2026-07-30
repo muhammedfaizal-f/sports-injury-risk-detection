@@ -109,3 +109,31 @@
     border-bottom: none;
   }
 }
+
+.invite-request-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.invite-request-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  background-color: var(--bg-input);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.invite-request-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.invite-request-actions button {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+}

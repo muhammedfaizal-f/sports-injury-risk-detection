@@ -20,8 +20,9 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String(150), nullable=False)
     email = Column(String(150), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=True)   # nullable now — Google users have no password
+    password_hash = Column(String(255), nullable=True)
     google_id = Column(String(255), unique=True, nullable=True, index=True)
+    avatar_path = Column(String(255), nullable=True)
     role = Column(Enum(UserRole), default=UserRole.athlete, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
@@ -101,3 +102,19 @@ class CoachAthlete(Base):
     id = Column(Integer, primary_key=True, index=True)
     coach_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     athlete_id = Column(Integer, ForeignKey("athletes.id"), nullable=False)
+
+class InviteStatus(str, enum.Enum):
+    pending = "pending"
+    accepted = "accepted"
+    declined = "declined"
+
+
+class Invite(Base):
+    __tablename__ = "invites"
+
+    id = Column(Integer, primary_key=True, index=True)
+    coach_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    athlete_email = Column(String(150), nullable=False)
+    status = Column(Enum(InviteStatus), default=InviteStatus.pending, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+    responded_at = Column(DateTime, nullable=True)

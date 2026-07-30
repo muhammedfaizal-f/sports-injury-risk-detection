@@ -1,8 +1,8 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, Any
 from decimal import Decimal
+from datetime import datetime
 from models import UserRole
-
 
 class UserCreate(BaseModel):
     full_name: str
@@ -119,3 +119,42 @@ class AthleteRiskSummary(BaseModel):
 class GoogleLoginRequest(BaseModel):
     id_token: str
     role: Optional[UserRole] = UserRole.athlete  # only used if creating a new account
+
+class InviteCreate(BaseModel):
+    athlete_email: EmailStr
+
+
+class InviteOut(BaseModel):
+    id: int
+    coach_id: int
+    athlete_email: str
+    status: str
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class InviteRespond(BaseModel):
+    accept: bool
+
+class UserProfileOut(BaseModel):
+    id: int
+    full_name: str
+    email: EmailStr
+    role: UserRole
+    avatar_url: Optional[str] = None
+    has_password: bool
+
+    class Config:
+        from_attributes = True
+
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+
+class PasswordChange(BaseModel):
+    current_password: Optional[str] = None  # not required if user has no password yet (Google-only)
+    new_password: str

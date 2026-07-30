@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 import './Home.css';
 
 const FEATURES = [
@@ -18,6 +19,7 @@ export default function Home() {
             <header className="home-nav fade-in-up">
                 <span className="home-logo"><span className="logo-dot" />SIRD</span>
                 <div className="home-nav-actions">
+                    <ThemeToggle />
                     <button className="btn-ghost" onClick={() => navigate('/login')}>Sign in</button>
                     <button onClick={() => navigate('/register')}>Get Started</button>
                 </div>

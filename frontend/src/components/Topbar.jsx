@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ThemeToggle from './ThemeToggle';
 import './Topbar.css';
 
 export default function Topbar({ activePage, userName }) {
@@ -17,42 +18,43 @@ export default function Topbar({ activePage, userName }) {
     { key: 'analysis', label: 'Analysis', path: '/analysis' },
     { key: 'risk', label: 'Risk Reports', path: '/risk' },
     { key: 'profile', label: 'My Profile', path: '/profile' },
+    { key: 'settings', label: 'Settings', path: '/settings' },
   ];
 
   const go = async (path, disabled) => {
-  if (disabled) return;
+    if (disabled) return;
 
-  setMenuOpen(false);
+    setMenuOpen(false);
 
-  // If Analysis button clicked
-  if (path === "/analysis") {
-    try {
-      const token = localStorage.getItem("token");
+    // If Analysis button clicked
+    if (path === "/analysis") {
+      try {
+        const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:8000/videos/mine", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        const res = await fetch("http://localhost:8000/videos/mine", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      const videos = await res.json();
+        const videos = await res.json();
 
-      // latest analyzed video
-      const analyzed = videos
-        .filter(v => v.status === "analyzed")
-        .sort((a, b) => b.id - a.id);
+        // latest analyzed video
+        const analyzed = videos
+          .filter(v => v.status === "analyzed")
+          .sort((a, b) => b.id - a.id);
 
-      if (analyzed.length > 0) {
-        navigate(`/analysis?video=${analyzed[0].id}`);
-        return;
+        if (analyzed.length > 0) {
+          navigate(`/analysis?video=${analyzed[0].id}`);
+          return;
+        }
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
     }
-  }
 
-  navigate(path);
-};
+    navigate(path);
+  };
 
   return (
     <header className="topbar">
@@ -76,6 +78,7 @@ export default function Topbar({ activePage, userName }) {
       </div>
 
       <div className="topbar-right topbar-right--desktop">
+        <ThemeToggle />
         <span className="topbar-user">{userName}</span>
         <button className="topbar-signout" onClick={handleSignOut}>Sign out</button>
       </div>
@@ -100,6 +103,7 @@ export default function Topbar({ activePage, userName }) {
           </button>
         ))}
         <div className="topbar-mobile-footer">
+          <ThemeToggle />
           <span className="topbar-user">{userName}</span>
           <button className="topbar-signout" onClick={handleSignOut}>Sign out</button>
         </div>

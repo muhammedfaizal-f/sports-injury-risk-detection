@@ -90,6 +90,18 @@ CREATE TABLE risk_predictions (
 
 ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
 ALTER TABLE users ADD COLUMN google_id VARCHAR(255) UNIQUE;
+ALTER TABLE users ADD COLUMN avatar_path VARCHAR(255);
+
+CREATE TYPE invite_status AS ENUM ('pending', 'accepted', 'declined');
+
+CREATE TABLE invites (
+    id              SERIAL PRIMARY KEY,
+    coach_id        INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    athlete_email   VARCHAR(150) NOT NULL,
+    status          invite_status NOT NULL DEFAULT 'pending',
+    created_at      TIMESTAMP DEFAULT NOW(),
+    responded_at    TIMESTAMP
+);
 -- ============================================================
 -- STUB — Milestone 3
 -- ============================================================

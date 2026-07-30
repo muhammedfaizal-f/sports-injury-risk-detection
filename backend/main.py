@@ -1,11 +1,11 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import Base, engine
-import models
+from fastapi.staticfiles import StaticFiles
+from routers import auth, athletes, videos, risk, dashboard, reports, invites, users
 
-from routers import auth, athletes, videos, risk, dashboard, reports
+os.makedirs("uploads/avatars", exist_ok=True)
 
-Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Sports Injury Risk Detection API")
 
 app.add_middleware(
@@ -16,12 +16,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 app.include_router(auth.router)
+app.include_router(users.router)
 app.include_router(athletes.router)
 app.include_router(videos.router)
 app.include_router(risk.router)
 app.include_router(dashboard.router)
 app.include_router(reports.router)
+app.include_router(invites.router)
+
 
 @app.get("/")
 def read_root():

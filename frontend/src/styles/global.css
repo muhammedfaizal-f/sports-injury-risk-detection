@@ -50,9 +50,66 @@
   --transition-base: 0.25s ease;
 }
 
-* { box-sizing: border-box; }
+/* Light theme override — activated via data-theme="light" on <html> */
+:root[data-theme='light'] {
+  --bg-primary: #f4f6fa;
+  --bg-secondary: #ffffff;
+  --bg-elevated: #eef1f7;
+  --bg-input: #ffffff;
+  --border-color: #dde3ee;
+  --border-subtle: #e8ecf4;
 
-html { scroll-behavior: smooth; }
+  --text-primary: #1a2436;
+  --text-secondary: #5b6a85;
+  --text-muted: #94a1b8;
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+
+  --teal: #0d9488;
+  --teal-soft: rgba(13, 148, 136, 0.08);
+
+  --success: #16a34a;
+  --success-soft: rgba(22, 163, 74, 0.1);
+  --warning: #d97706;
+  --warning-soft: rgba(217, 119, 6, 0.1);
+  --error: #dc2626;
+  --error-soft: rgba(220, 38, 38, 0.1);
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.06);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+:root[data-theme='light'] body {
+  background-image: radial-gradient(circle at 20% 0%, rgba(37, 99, 235, 0.04), transparent 40%);
+}
+
+/* Smooth theme transition */
+body,
+.card,
+.glass-card,
+input,
+select,
+textarea,
+button,
+.topbar,
+.role-panel,
+.panel,
+.stat-item,
+.video-row {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;
@@ -64,12 +121,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-input, select, textarea, button {
+input,
+select,
+textarea,
+button {
   font-family: var(--font-main);
   font-size: 0.95rem;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   width: 100%;
   padding: 0.65rem 0.85rem;
   background-color: var(--bg-input);
@@ -80,12 +142,17 @@ input, select, textarea {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-textarea { resize: vertical; min-height: 80px; }
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
 
 button {
   cursor: pointer;
@@ -104,7 +171,9 @@ button:hover:not(:disabled) {
   box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
 }
 
-button:active:not(:disabled) { transform: translateY(0); }
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
 
 button:disabled {
   background-color: var(--border-color);
@@ -114,45 +183,95 @@ button:disabled {
   box-shadow: none;
 }
 
-a { color: var(--accent); text-decoration: none; transition: color var(--transition-fast); }
-a:hover { color: var(--accent-hover); text-decoration: underline; }
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
 
-.error-text { color: var(--error); font-size: 0.85rem; margin: 0.5rem 0; }
-.success-text { color: var(--success); font-size: 0.85rem; margin: 0.5rem 0; }
+a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.error-text {
+  color: var(--error);
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+
+.success-text {
+  color: var(--success);
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
 
 /* ============================================================
    Animation keyframes — used across pages
    ============================================================ */
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% {
+    background-position: -400px 0;
+  }
+
+  100% {
+    background-position: 400px 0;
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulseSoft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
 }
 
-.fade-in-up { animation: fadeInUp 0.45s ease both; }
-.fade-in { animation: fadeIn 0.3s ease both; }
+.fade-in-up {
+  animation: fadeInUp 0.45s ease both;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease both;
+}
 
 /* stagger helper: apply --delay inline style for sequential entrance */
-.stagger { animation-delay: var(--delay, 0s); }
+.stagger {
+  animation-delay: var(--delay, 0s);
+}
 
 .skeleton {
   background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--border-color) 37%, var(--bg-elevated) 63%);
@@ -184,7 +303,9 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   transition: border-color var(--transition-base), transform var(--transition-base);
 }
 
-.card:hover { border-color: var(--border-subtle); }
+.card:hover {
+  border-color: var(--border-subtle);
+}
 
 .page-container {
   max-width: 960px;
@@ -193,7 +314,9 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 }
 
 @media (max-width: 640px) {
-  .page-container { padding: 1.25rem 1rem; }
+  .page-container {
+    padding: 1.25rem 1rem;
+  }
 }
 
 /* ============================================================
@@ -228,34 +351,76 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   background: var(--gradient-brand);
   box-shadow: 0 0 24px rgba(59, 130, 246, 0.35);
 }
-.btn-glow:hover { box-shadow: 0 0 32px rgba(59, 130, 246, 0.5); }
+
+.btn-glow:hover {
+  box-shadow: 0 0 32px rgba(59, 130, 246, 0.5);
+}
 
 /* Page transition — applied via location-keyed wrapper in App.jsx */
 @keyframes pageEnter {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.page-transition { animation: pageEnter 0.35s ease both; }
+
+.page-transition {
+  animation: pageEnter 0.35s ease both;
+}
 
 /* Count-up number animation (paired with AnimatedCounter component) */
 @keyframes countPop {
-  0% { transform: scale(0.85); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
-.counter-pop { animation: countPop 0.4s ease both; }
+
+.counter-pop {
+  animation: countPop 0.4s ease both;
+}
 
 /* Toast notifications */
 @keyframes toastIn {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
+
 @keyframes toastOut {
-  from { opacity: 1; transform: translateX(0); }
-  to { opacity: 0; transform: translateX(30px); }
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
 }
 
 /* Ripple on button click */
-.ripple-btn { position: relative; overflow: hidden; }
+.ripple-btn {
+  position: relative;
+  overflow: hidden;
+}
+
 .ripple {
   position: absolute;
   border-radius: 50%;
@@ -264,16 +429,31 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   animation: rippleAnim 0.55s ease-out;
   pointer-events: none;
 }
+
 @keyframes rippleAnim {
-  to { transform: scale(3); opacity: 0; }
+  to {
+    transform: scale(3);
+    opacity: 0;
+  }
 }
 
 /* Hover-lift utility for interactive cards */
-.hover-lift { transition: transform var(--transition-base), box-shadow var(--transition-base); }
-.hover-lift:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+.hover-lift {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
 
 /* Section spacing helper for landing page */
-.section { padding: 4rem 1.5rem; }
+.section {
+  padding: 4rem 1.5rem;
+}
+
 @media (max-width: 640px) {
-  .section { padding: 2.5rem 1rem; }
+  .section {
+    padding: 2.5rem 1rem;
+  }
 }
