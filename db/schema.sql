@@ -87,6 +87,9 @@ CREATE TABLE risk_predictions (
     factors_json    JSONB,
     created_at      TIMESTAMP DEFAULT NOW()
 );
+
+ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+ALTER TABLE users ADD COLUMN google_id VARCHAR(255) UNIQUE;
 -- ============================================================
 -- STUB — Milestone 3
 -- ============================================================

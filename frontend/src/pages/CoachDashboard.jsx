@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Topbar from '../components/Topbar';
 import api from '../api';
+import { useToast } from '../components/ToastContext';
 import './RoleDashboards.css';
 
 export default function CoachDashboard() {
@@ -8,6 +9,8 @@ export default function CoachDashboard() {
     const [athleteId, setAthleteId] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(true);
+    const { showToast } = useToast();
+  
 
     const loadTeam = () => {
         api.get('/dashboard/coach/team')
@@ -19,17 +22,32 @@ export default function CoachDashboard() {
     useEffect(() => { loadTeam(); }, []);
 
     const handleLink = async (e) => {
-        e.preventDefault();
-        if (!athleteId) return;
-        try {
-            await api.post('/dashboard/coach/link-athlete', { athlete_id: Number(athleteId) });
-            setMessage('Athlete linked to your team');
-            setAthleteId('');
-            loadTeam();
-        } catch (err) {
-            setMessage(err.response?.data?.detail || 'Could not link athlete');
-        }
-    };
+    e.preventDefault();
+
+    if (!athleteId) {
+        showToast('Please enter an Athlete ID', 'error');
+        return;
+    }
+
+    try {
+        await api.post('/dashboard/coach/link-athlete', {
+            athlete_id: Number(athleteId),
+        });
+
+        setMessage('Athlete linked to your team');
+        showToast('Athlete linked successfully!', 'success');
+
+        setAthleteId('');
+        loadTeam();
+
+    } catch (err) {
+        const errorMessage =
+            err.response?.data?.detail || 'Could not link athlete';
+
+        setMessage(errorMessage);
+        showToast(errorMessage, 'error');
+    }
+};
 
     const highRiskCount = team.filter((a) => ['high', 'critical'].includes(a.latest_risk_category)).length;
 

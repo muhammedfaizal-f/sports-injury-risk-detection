@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Topbar from '../components/Topbar';
+import AnimatedCounter from '../components/AnimatedCounter';
 import api from '../api';
 import './Dashboard.css';
 
@@ -42,7 +43,9 @@ export default function Dashboard() {
         <div className="stat-strip fade-in-up stagger" style={{ '--delay': '0.1s' }}>
           {stats.map((s) => (
             <div className="stat-item" key={s.label}>
-              <span className="stat-value">{s.value}</span>
+              <span className="stat-value">
+                {typeof s.value === 'number' ? <AnimatedCounter value={s.value} suffix={s.suffix || ''} /> : s.value}
+              </span>
               <span className="stat-label">{s.label}</span>
               <span className="stat-note">{s.note}</span>
             </div>

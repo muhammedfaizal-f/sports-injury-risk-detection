@@ -1,24 +1,36 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import { useToast } from '../components/ToastContext';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 import './AuthPage.css';
 
 export default function Register() {
   const [form, setForm] = useState({ full_name: '', email: '', password: '', role: 'athlete' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await api.post('/auth/register', form);
-      navigate('/login');
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Registration failed');
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    await api.post('/auth/register', form);
+
+    showToast('Registration successful!', 'success');
+
+    navigate('/login');
+  } catch (err) {
+    const errorMessage =
+      err.response?.data?.detail || 'Registration failed';
+
+    setError(errorMessage);
+    showToast(errorMessage, 'error');
+  }
+};
 
   return (
     <div className="auth-page">
@@ -58,6 +70,8 @@ export default function Register() {
         <p className="auth-footer">
           Already have an account? <a href="/login">Login</a>
         </p>
+        <div className="auth-divider"><span>or</span></div>
+        <GoogleLoginButton />
       </form>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
+import EmptyState from '../components/EmptyState';
 import api from '../api';
 import './VideoUpload.css';
 
@@ -108,7 +109,13 @@ export default function VideoUpload() {
 
         <section className="video-list-panel fade-in-up stagger" style={{ '--delay': '0.1s' }}>
           <h2>Your uploads</h2>
-          {videos.length === 0 && <p className="empty-state">No videos uploaded yet.</p>}
+          {videos.length === 0 && (
+            <EmptyState
+              icon="🎬"
+              title="No videos yet"
+              description="Upload your first movement clip above to start getting analysis."
+            />
+          )}
 
           <div className="video-list">
             {videos.map((v, i) => (

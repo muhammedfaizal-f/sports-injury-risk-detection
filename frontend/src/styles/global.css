@@ -195,3 +195,85 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 @media (max-width: 640px) {
   .page-container { padding: 1.25rem 1rem; }
 }
+
+/* ============================================================
+   Extended tokens + animations — featurestic upgrade
+   ============================================================ */
+
+:root {
+  --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #14b8a6 100%);
+  --gradient-glow: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(20, 184, 166, 0.1));
+  --glass-bg: rgba(19, 27, 44, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+/* Glassmorphism card variant — use alongside .card for hero/feature sections */
+.glass-card {
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+
+/* Gradient text for headlines */
+.gradient-text {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Glow button variant */
+.btn-glow {
+  background: var(--gradient-brand);
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.35);
+}
+.btn-glow:hover { box-shadow: 0 0 32px rgba(59, 130, 246, 0.5); }
+
+/* Page transition — applied via location-keyed wrapper in App.jsx */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-transition { animation: pageEnter 0.35s ease both; }
+
+/* Count-up number animation (paired with AnimatedCounter component) */
+@keyframes countPop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.counter-pop { animation: countPop 0.4s ease both; }
+
+/* Toast notifications */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(30px); }
+}
+
+/* Ripple on button click */
+.ripple-btn { position: relative; overflow: hidden; }
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(0);
+  animation: rippleAnim 0.55s ease-out;
+  pointer-events: none;
+}
+@keyframes rippleAnim {
+  to { transform: scale(3); opacity: 0; }
+}
+
+/* Hover-lift utility for interactive cards */
+.hover-lift { transition: transform var(--transition-base), box-shadow var(--transition-base); }
+.hover-lift:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+
+/* Section spacing helper for landing page */
+.section { padding: 4rem 1.5rem; }
+@media (max-width: 640px) {
+  .section { padding: 2.5rem 1rem; }
+}

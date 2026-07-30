@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Topbar from '../components/Topbar';
 import api from '../api';
+import { useToast } from '../components/ToastContext';
 import './Profile.css';
 
 export default function Profile() {
@@ -10,6 +11,8 @@ export default function Profile() {
   });
   const [exists, setExists] = useState(false);
   const [message, setMessage] = useState('');
+  const { showToast } = useToast();
+
 
   useEffect(() => {
     api.get('/athletes/me')
@@ -22,21 +25,28 @@ export default function Profile() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (exists) {
-        await api.put('/athletes/me', form);
-        setMessage('Profile updated!');
-      } else {
-        await api.post('/athletes/me', form);
-        setMessage('Profile created!');
-        setExists(true);
-      }
-    } catch (err) {
-      setMessage(err.response?.data?.detail || 'Something went wrong');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    if (exists) {
+      await api.put('/athletes/me', form);
+      setMessage('Profile updated!');
+      showToast('Profile updated successfully!', 'success');
+    } else {
+      await api.post('/athletes/me', form);
+      setMessage('Profile created!');
+      showToast('Profile created successfully!', 'success');
+      setExists(true);
     }
-  };
+  } catch (err) {
+    const errorMessage =
+      err.response?.data?.detail || 'Something went wrong';
+
+    setMessage(errorMessage);
+    showToast(errorMessage, 'error');
+  }
+};
 
   return (
     <div className="profile-wrapper">

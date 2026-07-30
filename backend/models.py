@@ -20,13 +20,13 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String(150), nullable=False)
     email = Column(String(150), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
+    password_hash = Column(String(255), nullable=True)   # nullable now — Google users have no password
+    google_id = Column(String(255), unique=True, nullable=True, index=True)
     role = Column(Enum(UserRole), default=UserRole.athlete, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
 
     athlete_profile = relationship("Athlete", back_populates="user", uselist=False)
-
 
 class Athlete(Base):
     __tablename__ = "athletes"

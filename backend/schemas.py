@@ -115,3 +115,7 @@ class AthleteRiskSummary(BaseModel):
     latest_risk_category: Optional[str] = None
     latest_injury_type: Optional[str] = None
     videos_analyzed: int
+
+class GoogleLoginRequest(BaseModel):
+    id_token: str
+    role: Optional[UserRole] = UserRole.athlete  # only used if creating a new account
