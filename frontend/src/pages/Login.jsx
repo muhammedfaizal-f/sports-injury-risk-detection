@@ -3,86 +3,78 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { decodeToken } from '../utils/auth';
 import { useToast } from '../components/ToastContext';
+import PasswordInput from '../components/PasswordInput';
+import AuthVisualPanel from '../components/AuthVisualPanel';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import './AuthPage.css';
+
+const roleRoutes = {
+  athlete: '/dashboard',
+  coach: '/coach-dashboard',
+  physiotherapist: '/physio-dashboard',
+  sports_scientist: '/scientist-dashboard',
+  admin: '/admin-dashboard',
+};
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
     try {
       const form = new URLSearchParams();
-      form.append("username", email);
-      form.append("password", password);
+      form.append('username', email);
+      form.append('password', password);
 
-      const res = await api.post("/auth/login", form, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
+      const res = await api.post('/auth/login', form, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
-
-      // Save JWT token
-      localStorage.setItem("token", res.data.access_token);
-
-      // instead of setMessage('Uploaded successfully'):
-      showToast('Video uploaded successfully', 'success');
-
-      // Decode JWT
+      localStorage.setItem('token', res.data.access_token);
       const decoded = decodeToken(res.data.access_token);
-
-      // Redirect based on role
-      const roleRoutes = {
-        athlete: "/dashboard",
-        coach: "/coach-dashboard",
-        physiotherapist: "/physio-dashboard",
-        sports_scientist: "/scientist-dashboard",
-        admin: "/admin-dashboard",
-      };
-
-      navigate(roleRoutes[decoded?.role] || "/dashboard");
+      showToast('Welcome back', 'success');
+      navigate(roleRoutes[decoded?.role] || '/dashboard');
     } catch (err) {
-      console.error(err);
-
-      // instead of setMessage(err.response?.data?.detail || 'Upload failed'):
-      showToast(err.response?.data?.detail || 'Upload failed', 'error');
-
-
-      setError("Invalid email or password");
+      showToast('Invalid email or password', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="auth-page">
-      <form className="auth-card" onSubmit={handleSubmit}>
-        <h2>Login</h2>
+      <AuthVisualPanel />
 
-        <div className="auth-field">
-          <label>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
+      <div className="auth-form-side">
+        <form className="auth-card fade-in-up" onSubmit={handleSubmit}>
+          <h2>Login</h2>
 
-        <div className="auth-field">
-          <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </div>
+          <div className="auth-field">
+            <label>Email</label>
+            <input value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+          </div>
 
-        {error && <p className="error-text">{error}</p>}
+          <div className="auth-field">
+            <label>Password</label>
+            <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+          </div>
 
-        <button type="submit" className="auth-submit">Login</button>
+          <button type="submit" className="auth-submit" disabled={loading}>
+            {loading ? <span className="spinner" /> : 'Login'}
+          </button>
 
-        <p className="auth-footer">
-          New user? <a href="/register">Register</a>
-        </p>
-        <div className="auth-divider"><span>or</span></div>
-        <GoogleLoginButton />
-      </form>
+          <div className="auth-divider"><span>or</span></div>
+          <GoogleLoginButton />
+
+          <p className="auth-footer">
+            New user? <a href="/register">Register</a>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

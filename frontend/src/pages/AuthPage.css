@@ -1,9 +1,20 @@
 .auth-page {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .auth-page {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.auth-form-side {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .auth-card {
