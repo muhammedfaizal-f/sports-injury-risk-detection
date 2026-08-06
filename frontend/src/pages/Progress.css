@@ -1,0 +1,117 @@
+.progress-page {
+    min-height: 100vh;
+}
+
+.progress-main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.progress-header h1 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem;
+}
+
+.progress-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.trend-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+}
+
+.trend-banner.trend-up {
+    border-color: var(--success);
+    background-color: var(--success-soft);
+}
+
+.trend-banner.trend-down {
+    border-color: var(--error);
+    background-color: var(--error-soft);
+}
+
+.trend-banner.trend-flat {
+    border-color: var(--border-color);
+    background-color: var(--bg-input);
+}
+
+.trend-icon {
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.progress-svg {
+    width: 100%;
+    height: auto;
+}
+
+.chart-gridline {
+    stroke: var(--border-subtle);
+    stroke-width: 1;
+}
+
+.chart-line {
+    fill: none;
+    stroke-width: 2.5;
+}
+
+.quality-line {
+    stroke: var(--teal);
+}
+
+.risk-line {
+    stroke: var(--risk-high);
+}
+
+.chart-dot {
+    stroke: var(--bg-secondary);
+    stroke-width: 1.5;
+}
+
+.quality-dot {
+    fill: var(--teal);
+}
+
+.risk-dot {
+    fill: var(--risk-high);
+}
+
+.chart-legend {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 0.75rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-dot.quality {
+    background-color: var(--teal);
+}
+
+.legend-dot.risk {
+    background-color: var(--risk-high);
+}

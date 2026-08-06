@@ -114,3 +114,14 @@ CREATE TABLE invites (
 --     recommendations     TEXT,
 --     created_at          TIMESTAMP DEFAULT NOW()
 -- );
+
+-- Check existing constraints (run in psql)
+SELECT conname, confdeltype FROM pg_constraint WHERE conname LIKE '%video_id%';
+-- confdeltype should be 'c' (cascade) for each row. If any show 'a' (no action), fix with:
+
+ALTER TABLE pose_results DROP CONSTRAINT pose_results_video_id_fkey;
+ALTER TABLE pose_results ADD CONSTRAINT pose_results_video_id_fkey
+  FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE;
+
+-- repeat the same pattern for biomechanics_results, quality_reports, risk_predictions
+-- if their constraint names differ, get the real name from the SELECT above first

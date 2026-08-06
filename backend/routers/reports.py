@@ -18,6 +18,14 @@ JOINT_DISPLAY = {
     "trunk_lean": {"label": "Trunk Lean", "max": 30},
 }
 
+FACTOR_LABELS = {
+    "biomechanical_deviation": "Biomechanical Deviations",
+    "historical_injury": "Historical Injury Factors",
+    "movement_asymmetry": "Movement Asymmetry",
+    "training_load": "Training Load Indicators",
+    "fatigue": "Fatigue Indicators",
+}
+
 
 def _assemble_report_data(video_id: int, current_user: User, db: Session) -> dict:
     video = db.query(Video).filter(Video.id == video_id).first()
@@ -38,6 +46,14 @@ def _assemble_report_data(video_id: int, current_user: User, db: Session) -> dic
             if key in JOINT_DISPLAY:
                 joint_angles.append({"joint": JOINT_DISPLAY[key]["label"], "value": data["avg"], "max": JOINT_DISPLAY[key]["max"]})
 
+    risk_factors = []
+    if risk and risk.factors_json:
+        breakdown = risk.factors_json.get("factor_breakdown", {})
+        risk_factors = [
+            {"label": FACTOR_LABELS.get(key, key), "contribution": data["contribution"]}
+            for key, data in breakdown.items()
+        ]
+
     return {
         "video_id": video.id,
         "athlete_name": athlete.user.full_name,
@@ -47,8 +63,11 @@ def _assemble_report_data(video_id: int, current_user: User, db: Session) -> dic
         "risk_score": float(risk.risk_score) if risk else None,
         "injury_type": risk.injury_type if risk else None,
         "joint_angles": joint_angles,
+        "risk_factors": risk_factors,
         "recommendations": quality.report_json.get("recommendations", []) if quality else [],
     }
+
+
 
 
 @router.get("/{video_id}/pdf")

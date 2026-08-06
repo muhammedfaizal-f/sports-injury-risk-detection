@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Athlete, User, UserRole
-from schemas import AthleteCreate, AthleteUpdate, AthleteOut
+from models import Athlete, User, UserRole, Video, QualityReport, RiskPrediction
+from schemas import AthleteCreate, AthleteUpdate, AthleteOut, ProgressPoint
 from dependencies import get_current_user
 
 router = APIRouter(prefix="/athletes", tags=["athletes"])
@@ -70,3 +70,52 @@ def get_athlete_by_id(
     if not profile:
         raise HTTPException(status_code=404, detail="Athlete not found")
     return profile
+
+@router.get("/me/progress", response_model=list[ProgressPoint])
+def get_my_progress(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.role != UserRole.athlete:
+        raise HTTPException(status_code=403, detail="Only athletes have a progress trend")
+
+    athlete = db.query(Athlete).filter(Athlete.user_id == current_user.id).first()
+    if not athlete:
+        raise HTTPException(status_code=404, detail="Create your athlete profile first")
+
+    videos = (
+        db.query(Video)
+        .filter(Video.athlete_id == athlete.id)
+        .order_by(Video.uploaded_at.asc())
+        .all()
+    )
+
+    points = []
+    for video in videos:
+        quality = (
+            db.query(QualityReport)
+            .filter(QualityReport.video_id == video.id)
+            .order_by(QualityReport.id.desc())
+            .first()
+        )
+        risk = (
+            db.query(RiskPrediction)
+            .filter(RiskPrediction.video_id == video.id)
+            .order_by(RiskPrediction.id.desc())
+            .first()
+        )
+
+        # Skip videos with neither score — they haven't reached analysis yet,
+        # and including them would just show flat gaps in the trend line.
+        if not quality and not risk:
+            continue
+
+        points.append(ProgressPoint(
+            video_id=video.id,
+            date=video.uploaded_at.strftime("%Y-%m-%d"),
+            quality_score=float(quality.quality_score) if quality else None,
+            risk_score=float(risk.risk_score) if risk else None,
+            risk_category=risk.risk_category if risk else None,
+        ))
+
+    return points

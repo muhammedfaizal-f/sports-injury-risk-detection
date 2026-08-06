@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 import EmptyState from '../components/EmptyState';
 import api from '../api';
+import { useToast } from '../components/ToastContext';
 import './VideoUpload.css';
 
 const ACTIVITIES = ['Running', 'Sprinting', 'Jumping', 'Squatting', 'Landing', 'Throwing', 'Cutting Movement'];
@@ -14,6 +15,7 @@ const STATUS_STYLES = {
   pose_estimated: 'status-processing',
   biomechanics_analyzed: 'status-processing',
   analyzed: 'status-done',
+  risk_predicted: 'status-done',
   invalid: 'status-error',
 };
 
@@ -24,7 +26,10 @@ export default function VideoUpload() {
   const [message, setMessage] = useState('');
   const [uploading, setUploading] = useState(false);
   const [processingId, setProcessingId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const loadVideos = () => {
     api.get('/videos/mine').then((res) => setVideos(res.data));
@@ -72,6 +77,20 @@ export default function VideoUpload() {
     }
   };
 
+  const handleDelete = async (videoId) => {
+    setDeletingId(videoId);
+    try {
+      await api.delete(`/videos/${videoId}`);
+      showToast('Video deleted', 'success');
+      setConfirmDeleteId(null);
+      loadVideos();
+    } catch (err) {
+      showToast(err.response?.data?.detail || 'Could not delete video', 'error');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="video-page">
       <Topbar activePage="videos" userName="Athlete" />
@@ -109,11 +128,12 @@ export default function VideoUpload() {
 
         <section className="video-list-panel fade-in-up stagger" style={{ '--delay': '0.1s' }}>
           <h2>Your uploads</h2>
+
           {videos.length === 0 && (
             <EmptyState
               icon="🎬"
               title="No videos yet"
-              description="Upload your first movement clip above to start getting analysis."
+              description="Upload your first movement clip above to get started."
             />
           )}
 
@@ -124,20 +144,38 @@ export default function VideoUpload() {
                   <span className="video-activity">{v.activity_type}</span>
                   <span className={`video-status ${STATUS_STYLES[v.status] || ''}`}>{v.status}</span>
                 </div>
-                <div className="video-row-actions">
-                  <button
-                    className="process-btn"
-                    disabled={v.status === 'analyzed' || processingId === v.id}
-                    onClick={() => handleProcess(v.id)}
-                  >
-                    {processingId === v.id ? <span className="spinner" /> : v.status === 'analyzed' ? 'Done' : 'Analyze'}
-                  </button>
-                  {v.status === 'analyzed' && (
-                    <button className="view-btn" onClick={() => navigate(`/analysis?video=${v.id}`)}>
-                      View Analysis
+
+                {confirmDeleteId === v.id ? (
+                  <div className="video-row-confirm">
+                    <span className="confirm-label">Delete this video?</span>
+                    <button
+                      className="confirm-yes"
+                      onClick={() => handleDelete(v.id)}
+                      disabled={deletingId === v.id}
+                    >
+                      {deletingId === v.id ? <span className="spinner" /> : 'Yes, delete'}
                     </button>
-                  )}
-                </div>
+                    <button className="confirm-no" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+                  </div>
+                ) : (
+                  <div className="video-row-actions">
+                    <button
+                      className="process-btn"
+                      disabled={v.status === 'analyzed' || v.status === 'risk_predicted' || processingId === v.id}
+                      onClick={() => handleProcess(v.id)}
+                    >
+                      {processingId === v.id ? <span className="spinner" /> : ['analyzed', 'risk_predicted'].includes(v.status) ? 'Done' : 'Analyze'}
+                    </button>
+                    {['analyzed', 'risk_predicted'].includes(v.status) && (
+                      <button className="view-btn" onClick={() => navigate(`/analysis?video=${v.id}`)}>
+                        View Analysis
+                      </button>
+                    )}
+                    <button className="delete-btn" onClick={() => setConfirmDeleteId(v.id)} title="Delete video">
+                      🗑
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

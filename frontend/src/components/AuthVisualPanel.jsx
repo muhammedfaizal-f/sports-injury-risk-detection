@@ -2,22 +2,22 @@ import { useState, useEffect } from 'react';
 import './AuthVisualPanel.css';
 
 const SLIDES = [
-  {
-    src: "/image/auth1.jpg",
-    caption: "Catch risk before it becomes an injury.",
-  },
-  {
-    src: "/image/auth2.jpg",
-    caption: "Every landing tells a biomechanical story.",
-  },
-  {
-    src: "/image/auth3.jpg",
-    caption: "Built for athletes, coaches, and sports science teams.",
-  },
-  {
-    src: "/image/auth4.jpg",
-    caption: "Pose estimation meets injury prevention.",
-  },
+{
+src:"/image/auth1.jpg",
+caption:"Detect injury risk before it happens."
+},
+{
+src:"/image/auth2.jpg",
+caption:"AI-powered pose estimation for every movement."
+},
+{
+src:"/image/auth3.jpg",
+caption:"Built for athletes, coaches and sports scientists."
+},
+{
+src:"/image/auth4.jpg",
+caption:"Train smarter. Reduce injuries. Improve performance."
+}
 ];
 
 export default function AuthVisualPanel() {

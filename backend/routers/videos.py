@@ -485,3 +485,36 @@ def analyze_full_pipeline(
         "frames_extracted": len(frame_paths),
         "frames_with_pose": len(pose_data),
     }
+    
+@router.delete("/{video_id}")
+def delete_video(
+    video_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Deletes a video and all its derived data. Database rows for pose_results,
+    biomechanics_results, quality_reports, and risk_predictions are removed
+    automatically via ON DELETE CASCADE (already set up in db/schema.sql).
+    This endpoint additionally cleans up the actual files on disk, which the
+    DB cascade can't do.
+    """
+    video = _get_owned_video(video_id, current_user, db)
+
+    # Best-effort file cleanup — a missing file shouldn't block the delete
+    try:
+        if video.file_path and os.path.exists(video.file_path):
+            os.remove(video.file_path)
+    except OSError:
+        pass
+
+    frames_dir = os.path.join(FRAMES_DIR, f"video_{video.id}")
+    annotated_dir = os.path.join(FRAMES_DIR, f"video_{video.id}_annotated")
+    for directory in (frames_dir, annotated_dir):
+        if os.path.isdir(directory):
+            shutil.rmtree(directory, ignore_errors=True)
+
+    db.delete(video)
+    db.commit()
+
+    return {"message": f"Video {video_id} deleted"}

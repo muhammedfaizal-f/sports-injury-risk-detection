@@ -158,3 +158,10 @@ class UserUpdate(BaseModel):
 class PasswordChange(BaseModel):
     current_password: Optional[str] = None  # not required if user has no password yet (Google-only)
     new_password: str
+
+class ProgressPoint(BaseModel):
+    video_id: int
+    date: str
+    quality_score: Optional[float] = None
+    risk_score: Optional[float] = None
+    risk_category: Optional[str] = None

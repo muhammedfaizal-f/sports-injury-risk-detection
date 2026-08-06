@@ -12,14 +12,13 @@ export default function Topbar({ activePage, userName }) {
     navigate('/login');
   };
 
-  const links = [
-    { key: 'overview', label: 'Overview', path: '/dashboard' },
-    { key: 'videos', label: 'Videos', path: '/videos' },
-    { key: 'analysis', label: 'Analysis', path: '/analysis' },
-    { key: 'risk', label: 'Risk Reports', path: '/risk' },
-    { key: 'profile', label: 'My Profile', path: '/profile' },
-    { key: 'settings', label: 'Settings', path: '/settings' },
-  ];
+const links = [
+  { key: 'overview', label: 'Overview', path: '/dashboard' },
+  { key: 'videos', label: 'Videos', path: '/videos' },
+  { key: 'progress', label: 'Progress', path: '/progress' },
+  { key: 'profile', label: 'My Profile', path: '/profile' },
+  { key: 'settings', label: 'Settings', path: '/settings' },
+];
 
   const go = async (path, disabled) => {
     if (disabled) return;
