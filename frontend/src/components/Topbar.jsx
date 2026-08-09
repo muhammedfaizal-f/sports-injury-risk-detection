@@ -1,57 +1,26 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
+import { decodeToken } from '../utils/auth';
+import { getRoleConfig } from '../utils/roleConfig';
 import './Topbar.css';
 
 export default function Topbar({ activePage, userName }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const token = localStorage.getItem('token');
+  const decoded = token ? decodeToken(token) : null;
+  const role = decoded?.role || 'athlete';
+  const config = getRoleConfig(role);
+
   const handleSignOut = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-const links = [
-  { key: 'overview', label: 'Overview', path: '/dashboard' },
-  { key: 'videos', label: 'Videos', path: '/videos' },
-  { key: 'progress', label: 'Progress', path: '/progress' },
-  { key: 'profile', label: 'My Profile', path: '/profile' },
-  { key: 'settings', label: 'Settings', path: '/settings' },
-];
-
-  const go = async (path, disabled) => {
-    if (disabled) return;
-
+  const go = (path) => {
     setMenuOpen(false);
-
-    // If Analysis button clicked
-    if (path === "/analysis") {
-      try {
-        const token = localStorage.getItem("token");
-
-        const res = await fetch("http://localhost:8000/videos/mine", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const videos = await res.json();
-
-        // latest analyzed video
-        const analyzed = videos
-          .filter(v => v.status === "analyzed")
-          .sort((a, b) => b.id - a.id);
-
-        if (analyzed.length > 0) {
-          navigate(`/analysis?video=${analyzed[0].id}`);
-          return;
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
     navigate(path);
   };
 
@@ -61,14 +30,14 @@ const links = [
         <span className="topbar-logo">
           <span className="logo-dot" />
           SIRD
+          <span className="topbar-role-tag">{config.label}</span>
         </span>
         <nav className="topbar-links topbar-links--desktop">
-          {links.map((l) => (
+          {config.navLinks.map((l) => (
             <button
               key={l.key}
               className={`topbar-link ${activePage === l.key ? 'active' : ''}`}
-              onClick={() => go(l.path, l.disabled)}
-              disabled={l.disabled}
+              onClick={() => go(l.path)}
             >
               {l.label}
             </button>
@@ -78,7 +47,7 @@ const links = [
 
       <div className="topbar-right topbar-right--desktop">
         <ThemeToggle />
-        <span className="topbar-user">{userName}</span>
+        <span className="topbar-user">{userName || config.label}</span>
         <button className="topbar-signout" onClick={handleSignOut}>Sign out</button>
       </div>
 
@@ -91,19 +60,18 @@ const links = [
       </button>
 
       <div className={`topbar-mobile-menu ${menuOpen ? 'open' : ''}`}>
-        {links.map((l) => (
+        {config.navLinks.map((l) => (
           <button
             key={l.key}
             className={`topbar-mobile-link ${activePage === l.key ? 'active' : ''}`}
-            onClick={() => go(l.path, l.disabled)}
-            disabled={l.disabled}
+            onClick={() => go(l.path)}
           >
             {l.label}
           </button>
         ))}
         <div className="topbar-mobile-footer">
           <ThemeToggle />
-          <span className="topbar-user">{userName}</span>
+          <span className="topbar-user">{userName || config.label}</span>
           <button className="topbar-signout" onClick={handleSignOut}>Sign out</button>
         </div>
       </div>

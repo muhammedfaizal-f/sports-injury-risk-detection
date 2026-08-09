@@ -6,15 +6,9 @@ import { useToast } from '../components/ToastContext';
 import PasswordInput from '../components/PasswordInput';
 import AuthVisualPanel from '../components/AuthVisualPanel';
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import { getRoleConfig } from '../utils/roleConfig';
 import './AuthPage.css';
 
-const roleRoutes = {
-  athlete: '/dashboard',
-  coach: '/coach-dashboard',
-  physiotherapist: '/physio-dashboard',
-  sports_scientist: '/scientist-dashboard',
-  admin: '/admin-dashboard',
-};
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -37,7 +31,7 @@ export default function Login() {
       localStorage.setItem('token', res.data.access_token);
       const decoded = decodeToken(res.data.access_token);
       showToast('Welcome back', 'success');
-      navigate(roleRoutes[decoded?.role] || '/dashboard');
+       navigate(getRoleConfig(decoded?.role).homePath);
     } catch (err) {
       showToast('Invalid email or password', 'error');
     } finally {
@@ -45,36 +39,34 @@ export default function Login() {
     }
   };
 
-  return (
-    <div className="auth-page">
-      <AuthVisualPanel />
+ return (
+  <div className="auth-page">
+    <AuthVisualPanel />
 
-      <div className="auth-form-side">
-        <form className="auth-card fade-in-up" onSubmit={handleSubmit}>
-          <h2>Login</h2>
+    <form className="auth-card fade-in-up" onSubmit={handleSubmit}>
+      <h2>Login</h2>
 
-          <div className="auth-field">
-            <label>Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-          </div>
-
-          <div className="auth-field">
-            <label>Password</label>
-            <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
-          </div>
-
-          <button type="submit" className="auth-submit" disabled={loading}>
-            {loading ? <span className="spinner" /> : 'Login'}
-          </button>
-
-          <div className="auth-divider"><span>or</span></div>
-          <GoogleLoginButton />
-
-          <p className="auth-footer">
-            New user? <a href="/register">Register</a>
-          </p>
-        </form>
+      <div className="auth-field">
+        <label>Email</label>
+        <input value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
       </div>
-    </div>
-  );
+
+      <div className="auth-field">
+        <label>Password</label>
+        <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+      </div>
+
+      <button type="submit" className="auth-submit" disabled={loading}>
+        {loading ? <span className="spinner" /> : 'Login'}
+      </button>
+
+      <div className="auth-divider"><span>or</span></div>
+      <GoogleLoginButton />
+
+      <p className="auth-footer">
+        New user? <a href="/register">Register</a>
+      </p>
+    </form>
+  </div>
+);
 }

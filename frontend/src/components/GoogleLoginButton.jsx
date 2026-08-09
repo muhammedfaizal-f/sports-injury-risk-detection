@@ -2,15 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { decodeToken } from '../utils/auth';
+import { getRoleConfig } from '../utils/roleConfig';
 import { useToast } from './ToastContext';
-
-const roleRoutes = {
-  athlete: '/dashboard',
-  coach: '/coach-dashboard',
-  physiotherapist: '/physio-dashboard',
-  sports_scientist: '/scientist-dashboard',
-  admin: '/admin-dashboard',
-};
 
 export default function GoogleLoginButton({ role = 'athlete' }) {
   const buttonRef = useRef(null);
@@ -31,7 +24,7 @@ export default function GoogleLoginButton({ role = 'athlete' }) {
           localStorage.setItem('token', res.data.access_token);
           const decoded = decodeToken(res.data.access_token);
           showToast('Signed in with Google', 'success');
-          navigate(roleRoutes[decoded?.role] || '/dashboard');
+          navigate(getRoleConfig(decoded?.role).homePath);
         } catch (err) {
           showToast('Google sign-in failed', 'error');
         }

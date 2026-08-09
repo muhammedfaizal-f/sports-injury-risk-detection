@@ -1,16 +1,6 @@
 .auth-page {
+  position: relative;
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 900px) {
-  .auth-page {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.auth-form-side {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,12 +8,16 @@
 }
 
 .auth-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 380px;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 2rem 1.75rem;
+  max-width: 400px;
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 2.25rem 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 
 .auth-card h2 {

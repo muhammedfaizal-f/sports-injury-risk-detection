@@ -26,28 +26,33 @@ export default function AuthVisualPanel() {
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((i) => (i + 1) % SLIDES.length);
-    }, 4500);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <div className="auth-visual-panel">
+    <div className="auth-bg-layer">
       {SLIDES.map((slide, i) => (
         <div
           key={slide.src}
-          className={`auth-visual-slide ${i === index ? 'active' : ''}`}
+          className={`auth-bg-slide ${i === index ? 'active' : ''}`}
           style={{ backgroundImage: `url(${slide.src})` }}
         />
       ))}
-      <div className="auth-visual-overlay" />
-      <div className="auth-visual-content">
-        <span className="auth-visual-logo"><span className="logo-dot" />SIRD</span>
-        <p key={index} className="auth-visual-caption fade-in-up">{SLIDES[index].caption}</p>
-        <div className="auth-visual-dots">
-          {SLIDES.map((_, i) => (
-            <span key={i} className={`auth-visual-dot ${i === index ? 'active' : ''}`} />
-          ))}
-        </div>
+      <div className="auth-bg-overlay" />
+
+      <div className="auth-bg-brand">
+        <span className="logo-dot" /> SIRD
+      </div>
+
+      <p key={index} className="auth-bg-caption fade-in-up">
+        {SLIDES[index].caption}
+      </p>
+
+      <div className="auth-bg-dots">
+        {SLIDES.map((_, i) => (
+          <span key={i} className={`auth-bg-dot ${i === index ? 'active' : ''}`} />
+        ))}
       </div>
     </div>
   );

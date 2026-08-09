@@ -11,6 +11,18 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+.topbar-role-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  margin-left: 0.5rem;
+}
+
 .topbar-left {
   display: flex;
   align-items: center;

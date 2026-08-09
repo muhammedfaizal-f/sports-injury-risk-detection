@@ -1,77 +1,74 @@
-.auth-visual-panel {
-  position: relative;
-  display: none;
+.auth-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
   overflow: hidden;
 }
 
-.auth-visual-slide {
+.auth-bg-slide {
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
   opacity: 0;
-  transform: scale(1.12);
-  transition:
-    opacity 1.3s ease,
-    transform 8s ease;
+  transform: scale(1.05);
+  transition: opacity 1.4s ease, transform 7s ease;
 }
 
-.auth-visual-slide.active {
+.auth-bg-slide.active {
   opacity: 1;
   transform: scale(1);
 }
 
-.auth-visual-overlay {
+.auth-bg-overlay {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      to right,
-      rgba(8,15,32,0.15) 0%,
-      rgba(8,15,32,0.45) 45%,
-      rgba(8,15,32,0.92) 100%
-    ),
-    linear-gradient(
-      to top,
-      rgba(8,15,32,0.75),
-      rgba(8,15,32,0.2)
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(6, 10, 20, 0.75) 0%,
+    rgba(6, 10, 20, 0.55) 45%,
+    rgba(6, 10, 20, 0.85) 100%
+  );
 }
 
-.auth-visual-content {
+.auth-bg-brand {
   position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 2.5rem;
-  color: #fff;
-}
-
-.auth-visual-logo {
+  top: 2rem;
+  left: 2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  color: #fff;
   font-weight: 800;
   letter-spacing: 0.06em;
+  font-size: 1.05rem;
+  z-index: 1;
+}
+
+.auth-bg-caption {
   position: absolute;
-  top: 2rem;
+  bottom: 2.5rem;
   left: 2.5rem;
+  right: 2.5rem;
+  max-width: 480px;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+  z-index: 1;
 }
 
-.auth-visual-caption {
-  font-size: 2.3rem;
-  font-weight: 700;
-  line-height: 1.25;
-  max-width: 520px;
-  margin-bottom: 2rem;
-  letter-spacing: -.02em;
-  text-shadow: 0 6px 20px rgba(0,0,0,.55);
+.auth-bg-dots {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 2.5rem;
+  display: flex;
+  gap: 0.4rem;
+  z-index: 1;
 }
 
-.auth-visual-dots { display: flex; gap: 0.4rem; }
-
-.auth-visual-dot {
+.auth-bg-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -79,13 +76,14 @@
   transition: background-color var(--transition-base), width var(--transition-base);
 }
 
-.auth-visual-dot.active {
+.auth-bg-dot.active {
   background-color: #fff;
   width: 18px;
   border-radius: 3px;
 }
 
-/* Only show the photo panel on wider screens — mobile stays form-only */
-@media (min-width: 900px) {
-  .auth-visual-panel { display: block; }
+@media (max-width: 640px) {
+  .auth-bg-caption { font-size: 1.05rem; bottom: 2rem; left: 1.5rem; right: 1.5rem; }
+  .auth-bg-brand { top: 1.5rem; left: 1.5rem; }
+  .auth-bg-dots { right: 1.5rem; }
 }

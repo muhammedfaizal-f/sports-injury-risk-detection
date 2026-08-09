@@ -87,6 +87,37 @@
   background-image: radial-gradient(circle at 20% 0%, rgba(37, 99, 235, 0.04), transparent 40%);
 }
 
+/* ============================================================
+   Role-based accent theming — layered on top of dark/light mode.
+   Athlete keeps the default blue defined at :root. Each other
+   role gets a distinct accent so the UI is visually unmistakable
+   about which role is logged in.
+   ============================================================ */
+
+:root[data-role='coach'] {
+  --accent: #f97316;
+  --accent-hover: #ea580c;
+  --accent-soft: rgba(249, 115, 22, 0.12);
+}
+
+:root[data-role='physiotherapist'] {
+  --accent: #14b8a6;
+  --accent-hover: #0d9488;
+  --accent-soft: rgba(20, 184, 166, 0.12);
+}
+
+:root[data-role='sports_scientist'] {
+  --accent: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-soft: rgba(139, 92, 246, 0.12);
+}
+
+:root[data-role='admin'] {
+  --accent: #ef4444;
+  --accent-hover: #dc2626;
+  --accent-soft: rgba(239, 68, 68, 0.12);
+}
+
 /* Smooth theme transition */
 body,
 .card,
