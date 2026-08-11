@@ -149,5 +149,9 @@ ALTER TABLE pose_results DROP CONSTRAINT pose_results_video_id_fkey;
 ALTER TABLE pose_results ADD CONSTRAINT pose_results_video_id_fkey
   FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE;
 
+ALTER TABLE athletes DROP CONSTRAINT athletes_user_id_fkey;
+ALTER TABLE athletes ADD CONSTRAINT athletes_user_id_fkey
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
 -- repeat the same pattern for biomechanics_results, quality_reports, risk_predictions
 -- if their constraint names differ, get the real name from the SELECT above first

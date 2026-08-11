@@ -211,3 +211,24 @@ class TrainingPlanOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class AdminUserOut(BaseModel):
+    id: int
+    full_name: str
+    email: EmailStr
+    role: UserRole
+    is_active: bool
+    has_password: bool
+    is_google_linked: bool
+    created_at: Optional[datetime] = None
+    athlete_id: Optional[int] = None
+    videos_uploaded: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+class AdminUserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    role: Optional[UserRole] = None
+    is_active: Optional[bool] = None

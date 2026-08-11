@@ -6,6 +6,7 @@ from schemas import (
     LinkAthleteRequest, AthleteRiskSummary,
     RecoveryPlanCreate, RecoveryPlanUpdate, RecoveryPlanOut,
     TrainingPlanCreate, TrainingPlanUpdate, TrainingPlanOut,
+    AdminUserOut, AdminUserUpdate,
 )
 from dependencies import get_current_user, require_role
 from exercise_library import suggest_exercises
@@ -405,3 +406,100 @@ def update_training_plan_status(
     db.commit()
     db.refresh(plan)
     return plan
+
+    def _to_admin_user_out(user: User, db: Session) -> AdminUserOut:
+    athlete = db.query(Athlete).filter(Athlete.user_id == user.id).first()
+    videos_uploaded = None
+    if athlete:
+        videos_uploaded = db.query(Video).filter(Video.athlete_id == athlete.id).count()
+
+    return AdminUserOut(
+        id=user.id,
+        full_name=user.full_name,
+        email=user.email,
+        role=user.role,
+        is_active=user.is_active,
+        has_password=bool(user.password_hash),
+        is_google_linked=bool(user.google_id),
+        created_at=user.created_at,
+        athlete_id=athlete.id if athlete else None,
+        videos_uploaded=videos_uploaded,
+    )
+
+
+@router.get("/admin/users", response_model=list[AdminUserOut])
+def admin_list_users(
+    role: Optional[str] = None,
+    search: Optional[str] = None,
+    current_user: User = Depends(require_role(UserRole.admin)),
+    db: Session = Depends(get_db),
+):
+    query = db.query(User)
+
+    if role and role != "all":
+        query = query.filter(User.role == role)
+
+    if search:
+        like_pattern = f"%{search}%"
+        query = query.filter(
+            (User.full_name.ilike(like_pattern)) | (User.email.ilike(like_pattern))
+        )
+
+    users = query.order_by(User.id.desc()).all()
+    return [_to_admin_user_out(u, db) for u in users]
+
+
+@router.get("/admin/users/{user_id}", response_model=AdminUserOut)
+def admin_get_user(
+    user_id: int,
+    current_user: User = Depends(require_role(UserRole.admin)),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return _to_admin_user_out(user, db)
+
+
+@router.put("/admin/users/{user_id}", response_model=AdminUserOut)
+def admin_update_user(
+    user_id: int,
+    data: AdminUserUpdate,
+    current_user: User = Depends(require_role(UserRole.admin)),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.id == current_user.id and data.is_active is False:
+        raise HTTPException(status_code=400, detail="You cannot deactivate your own account")
+
+    if data.full_name is not None:
+        user.full_name = data.full_name
+    if data.role is not None:
+        user.role = data.role
+    if data.is_active is not None:
+        user.is_active = data.is_active
+
+    db.commit()
+    db.refresh(user)
+    return _to_admin_user_out(user, db)
+
+
+@router.delete("/admin/users/{user_id}")
+def admin_delete_user(
+    user_id: int,
+    current_user: User = Depends(require_role(UserRole.admin)),
+    db: Session = Depends(get_db),
+):
+    if user_id == current_user.id:
+        raise HTTPException(status_code=400, detail="You cannot delete your own account")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db.delete(user)
+    db.commit()
+    return {"message": f"User {user_id} deleted"}
