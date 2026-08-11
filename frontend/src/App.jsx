@@ -12,6 +12,7 @@ import RiskReport from './pages/RiskReport';
 import Progress from './pages/Progress';
 import Reports from './pages/Reports';
 import CoachDashboard from './pages/CoachDashboard';
+import CoachAthleteDetail from './pages/CoachAthleteDetail';
 import PhysioDashboard from './pages/PhysioDashboard';
 import ScientistDashboard from './pages/ScientistDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -76,9 +77,11 @@ function AnimatedRoutes() {
 
         {/* Coach-only */}
         <Route path="/coach-dashboard" element={<RoleRoute allow={['coach']}><CoachDashboard /></RoleRoute>} />
+        <Route path="/coach-dashboard/athlete/:athleteId" element={<RoleRoute allow={['coach']}><CoachAthleteDetail /></RoleRoute>} />
 
         {/* Physiotherapist-only */}
         <Route path="/physio-dashboard" element={<RoleRoute allow={['physiotherapist']}><PhysioDashboard /></RoleRoute>} />
+
 
         {/* Sports Scientist-only */}
         <Route path="/scientist-dashboard" element={<RoleRoute allow={['sports_scientist']}><ScientistDashboard /></RoleRoute>} />

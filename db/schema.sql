@@ -102,6 +102,19 @@ CREATE TABLE invites (
     created_at      TIMESTAMP DEFAULT NOW(),
     responded_at    TIMESTAMP
 );
+
+CREATE TYPE recovery_plan_status AS ENUM ('not_started', 'in_progress', 'completed');
+
+CREATE TABLE recovery_plans (
+    id              SERIAL PRIMARY KEY,
+    physio_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    athlete_id      INTEGER NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
+    exercises_json  JSONB,
+    notes           TEXT,
+    status          recovery_plan_status NOT NULL DEFAULT 'not_started',
+    created_at      TIMESTAMP DEFAULT NOW(),
+    updated_at      TIMESTAMP DEFAULT NOW()
+);
 -- ============================================================
 -- STUB — Milestone 3
 -- ============================================================

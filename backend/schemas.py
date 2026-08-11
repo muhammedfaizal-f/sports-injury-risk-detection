@@ -115,6 +115,8 @@ class AthleteRiskSummary(BaseModel):
     latest_risk_category: Optional[str] = None
     latest_injury_type: Optional[str] = None
     videos_analyzed: int
+    risk_trend: str = "flat"
+    training_load: Optional[str] = None
 
 class GoogleLoginRequest(BaseModel):
     id_token: str
@@ -165,3 +167,25 @@ class ProgressPoint(BaseModel):
     quality_score: Optional[float] = None
     risk_score: Optional[float] = None
     risk_category: Optional[str] = None
+
+class RecoveryPlanCreate(BaseModel):
+    athlete_id: int
+    exercises: list[dict]
+    notes: Optional[str] = None
+
+
+class RecoveryPlanUpdate(BaseModel):
+    status: str  # not_started | in_progress | completed
+
+
+class RecoveryPlanOut(BaseModel):
+    id: int
+    physio_id: int
+    athlete_id: int
+    exercises_json: Optional[Any] = None
+    notes: Optional[str] = None
+    status: str
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

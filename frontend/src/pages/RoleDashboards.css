@@ -181,6 +181,210 @@
     min-width: 140px;
 }
 
+.team-alert-banner {
+    background-color: var(--error-soft);
+    border: 1px solid var(--error);
+    color: var(--error);
+    border-radius: var(--radius);
+    padding: 0.8rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.team-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.team-controls select {
+    width: auto;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.8rem;
+}
+
+.clickable-row {
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.clickable-row:hover {
+    background-color: var(--bg-elevated);
+}
+
+.row-arrow {
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.trend-tag {
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+.trend-up {
+    color: var(--error);
+}
+
+.trend-down {
+    color: var(--success);
+}
+
+.trend-flat {
+    color: var(--text-muted);
+}
+
+.back-link {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0;
+    font-size: 0.85rem;
+    align-self: flex-start;
+}
+
+.back-link:hover {
+    color: var(--accent);
+    background: transparent;
+    transform: none;
+    box-shadow: none;
+}
+
+.exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+}
+
+.exercise-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.exercise-item:hover {
+    border-color: var(--accent);
+}
+
+.exercise-item.checked {
+    border-color: var(--accent);
+    background-color: var(--accent-soft);
+}
+
+.exercise-item input {
+    width: auto;
+    margin-top: 0.2rem;
+}
+
+.exercise-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.exercise-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.exercise-meta {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.exercise-source {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.plan-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.plan-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1rem;
+    background-color: var(--bg-input);
+}
+
+.plan-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.plan-date {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.plan-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+}
+
+.plan-status-not_started {
+    background-color: var(--bg-elevated);
+    color: var(--text-secondary);
+}
+
+.plan-status-in_progress {
+    background-color: var(--warning-soft);
+    color: var(--warning);
+}
+
+.plan-status-completed {
+    background-color: var(--success-soft);
+    color: var(--success);
+}
+
+.plan-exercise-list {
+    margin: 0 0 0.5rem 0;
+    padding-left: 1.2rem;
+    font-size: 0.85rem;
+}
+
+.plan-exercise-list li {
+    margin-bottom: 0.2rem;
+}
+
+.plan-notes {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin: 0.4rem 0;
+}
+
+@media (max-width: 700px) {
+    .panel-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.6rem;
+    }
+
+    .team-controls {
+        width: 100%;
+    }
+
+    .team-controls select {
+        flex: 1;
+    }
+}
+
 @media (max-width: 700px) {
     .role-stat-strip {
         flex-direction: column;

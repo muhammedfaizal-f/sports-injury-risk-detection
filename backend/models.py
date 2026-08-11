@@ -118,3 +118,21 @@ class Invite(Base):
     status = Column(Enum(InviteStatus), default=InviteStatus.pending, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
     responded_at = Column(DateTime, nullable=True)
+
+class RecoveryPlanStatus(str, enum.Enum):
+    not_started = "not_started"
+    in_progress = "in_progress"
+    completed = "completed"
+
+
+class RecoveryPlan(Base):
+    __tablename__ = "recovery_plans"
+
+    id = Column(Integer, primary_key=True, index=True)
+    physio_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    athlete_id = Column(Integer, ForeignKey("athletes.id"), nullable=False)
+    exercises_json = Column(JSONB)
+    notes = Column(Text)
+    status = Column(Enum(RecoveryPlanStatus), default=RecoveryPlanStatus.not_started, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
