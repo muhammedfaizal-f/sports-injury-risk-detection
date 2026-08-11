@@ -1,6 +1,12 @@
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
+from io import BytesIO
+from sqlalchemy.orm import Session
+from database import get_db
 from models import (
     User, UserRole, Athlete, CoachAthlete, Video, QualityReport, RiskPrediction,
-    RecoveryPlan, TrainingPlan,
+    RecoveryPlan, TrainingPlan, BiomechanicsResult,
 )
 from schemas import (
     LinkAthleteRequest, AthleteRiskSummary,
@@ -11,6 +17,8 @@ from schemas import (
 from dependencies import get_current_user, require_role
 from exercise_library import suggest_exercises
 from training_recommendations import build_training_suggestions
+from health_index import compute_overall_health, flag_joint_deviations
+from utils.research_report import build_research_report_pdf, build_research_report_excel
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -503,3 +511,130 @@ def admin_delete_user(
     db.delete(user)
     db.commit()
     return {"message": f"User {user_id} deleted"}
+
+@router.get("/sports-scientist/health-index")
+def health_index(
+    current_user: User = Depends(require_role(UserRole.sports_scientist)),
+    db: Session = Depends(get_db),
+):
+    athletes = db.query(Athlete).all()
+    results = []
+
+    for athlete in athletes:
+        videos = db.query(Video).filter(Video.athlete_id == athlete.id).all()
+        video_ids = [v.id for v in videos]
+        if not video_ids:
+            continue
+
+        quality_reports = db.query(QualityReport).filter(QualityReport.video_id.in_(video_ids)).all()
+        risk_predictions = db.query(RiskPrediction).filter(RiskPrediction.video_id.in_(video_ids)).all()
+
+        if not quality_reports and not risk_predictions:
+            continue
+
+        avg_quality = (
+            sum(float(q.quality_score) for q in quality_reports) / len(quality_reports)
+            if quality_reports else None
+        )
+        avg_risk = (
+            sum(float(r.risk_score) for r in risk_predictions) / len(risk_predictions)
+            if risk_predictions else None
+        )
+
+        health = compute_overall_health(avg_quality, avg_risk)
+
+        results.append({
+            "athlete_id": athlete.id,
+            "full_name": athlete.user.full_name,
+            "sport_type": athlete.sport_type,
+            "avg_quality_score": round(avg_quality, 1) if avg_quality is not None else None,
+            "avg_risk_score": round(avg_risk, 1) if avg_risk is not None else None,
+            "videos_analyzed": len(video_ids),
+            **health,
+        })
+
+    # Worst health first — that's what a sports authority needs to see immediately
+    results.sort(key=lambda r: r["health_score"])
+    return results
+
+
+@router.get("/sports-scientist/biomechanics-analytics")
+def biomechanics_analytics(
+    current_user: User = Depends(require_role(UserRole.sports_scientist)),
+    db: Session = Depends(get_db),
+):
+    all_results = db.query(BiomechanicsResult).all()
+    total_analyzed = len(all_results)
+
+    joint_flag_counts: dict[str, int] = {}
+    for result in all_results:
+        joint_summary = result.analysis_json.get("joint_summary", {})
+        for joint in flag_joint_deviations(joint_summary):
+            joint_flag_counts[joint] = joint_flag_counts.get(joint, 0) + 1
+
+    joint_frequency = [
+        {
+            "joint": joint.replace("_", " ").title(),
+            "flagged_count": count,
+            "total_analyzed": total_analyzed,
+            "flagged_rate": round(count / total_analyzed * 100, 1) if total_analyzed else 0,
+        }
+        for joint, count in sorted(joint_flag_counts.items(), key=lambda x: -x[1])
+    ]
+
+    return {"total_videos_analyzed": total_analyzed, "joint_deviation_frequency": joint_frequency}
+
+
+def _build_research_report_data(db: Session) -> dict:
+    all_athletes = db.query(Athlete).all()
+    all_risk = db.query(RiskPrediction).all()
+    all_biomech = db.query(BiomechanicsResult).all()
+
+    risk_by_category = {"low": 0, "moderate": 0, "high": 0, "critical": 0}
+    injury_type_counts = {}
+    for r in all_risk:
+        risk_by_category[r.risk_category] = risk_by_category.get(r.risk_category, 0) + 1
+        injury_type_counts[r.injury_type] = injury_type_counts.get(r.injury_type, 0) + 1
+
+    joint_flag_counts = {}
+    for result in all_biomech:
+        joint_summary = result.analysis_json.get("joint_summary", {})
+        for joint in flag_joint_deviations(joint_summary):
+            joint_flag_counts[joint.replace("_", " ").title()] = joint_flag_counts.get(joint.replace("_", " ").title(), 0) + 1
+
+    return {
+        "total_athletes": len(all_athletes),
+        "total_risk_assessments": len(all_risk),
+        "total_biomechanics_analyses": len(all_biomech),
+        "risk_distribution": risk_by_category,
+        "injury_type_distribution": injury_type_counts,
+        "joint_deviation_frequency": joint_flag_counts,
+    }
+
+
+@router.get("/sports-scientist/export/pdf")
+def export_research_report_pdf(
+    current_user: User = Depends(require_role(UserRole.sports_scientist)),
+    db: Session = Depends(get_db),
+):
+    data = _build_research_report_data(db)
+    pdf_bytes = build_research_report_pdf(data)
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=research_report.pdf"},
+    )
+
+
+@router.get("/sports-scientist/export/excel")
+def export_research_report_excel(
+    current_user: User = Depends(require_role(UserRole.sports_scientist)),
+    db: Session = Depends(get_db),
+):
+    data = _build_research_report_data(db)
+    excel_bytes = build_research_report_excel(data)
+    return StreamingResponse(
+        BytesIO(excel_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=research_report.xlsx"},
+    )
