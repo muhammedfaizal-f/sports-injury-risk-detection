@@ -136,3 +136,21 @@ class RecoveryPlan(Base):
     status = Column(Enum(RecoveryPlanStatus), default=RecoveryPlanStatus.not_started, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+class TrainingPlanStatus(str, enum.Enum):
+    proposed = "proposed"
+    applied = "applied"
+    reviewed = "reviewed"
+
+
+class TrainingPlan(Base):
+    __tablename__ = "training_plans"
+
+    id = Column(Integer, primary_key=True, index=True)
+    coach_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    athlete_id = Column(Integer, ForeignKey("athletes.id"), nullable=False)
+    suggestions_json = Column(JSONB)
+    notes = Column(Text)
+    status = Column(Enum(TrainingPlanStatus), default=TrainingPlanStatus.proposed, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

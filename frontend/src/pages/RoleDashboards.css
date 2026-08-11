@@ -369,6 +369,20 @@
     margin: 0.4rem 0;
 }
 
+.training-context {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.training-injury-tag {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
 @media (max-width: 700px) {
     .panel-header-row {
         flex-direction: column;

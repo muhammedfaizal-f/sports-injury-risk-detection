@@ -115,6 +115,19 @@ CREATE TABLE recovery_plans (
     created_at      TIMESTAMP DEFAULT NOW(),
     updated_at      TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TYPE training_plan_status AS ENUM ('proposed', 'applied', 'reviewed');
+
+CREATE TABLE training_plans (
+    id                  SERIAL PRIMARY KEY,
+    coach_id            INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    athlete_id          INTEGER NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
+    suggestions_json    JSONB,
+    notes               TEXT,
+    status              training_plan_status NOT NULL DEFAULT 'proposed',
+    created_at          TIMESTAMP DEFAULT NOW(),
+    updated_at          TIMESTAMP DEFAULT NOW()
+);
 -- ============================================================
 -- STUB — Milestone 3
 -- ============================================================

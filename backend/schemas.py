@@ -189,3 +189,25 @@ class RecoveryPlanOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class TrainingPlanCreate(BaseModel):
+    athlete_id: int
+    suggestions: list[str]
+    notes: Optional[str] = None
+
+
+class TrainingPlanUpdate(BaseModel):
+    status: str  # proposed | applied | reviewed
+
+
+class TrainingPlanOut(BaseModel):
+    id: int
+    coach_id: int
+    athlete_id: int
+    suggestions_json: Optional[Any] = None
+    notes: Optional[str] = None
+    status: str
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

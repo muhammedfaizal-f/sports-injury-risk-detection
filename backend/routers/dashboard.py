@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from database import get_db
-from models import User, UserRole, Athlete, CoachAthlete, Video, QualityReport, RiskPrediction, RecoveryPlan
+from models import (
+    User, UserRole, Athlete, CoachAthlete, Video, QualityReport, RiskPrediction,
+    RecoveryPlan, TrainingPlan,
+)
 from schemas import (
     LinkAthleteRequest, AthleteRiskSummary,
     RecoveryPlanCreate, RecoveryPlanUpdate, RecoveryPlanOut,
+    TrainingPlanCreate, TrainingPlanUpdate, TrainingPlanOut,
 )
 from dependencies import get_current_user, require_role
 from exercise_library import suggest_exercises
+from training_recommendations import build_training_suggestions
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -307,3 +309,99 @@ def admin_overview(
         "videos_by_status": status_counts,
     }
     
+@router.get("/coach/athlete/{athlete_id}/suggested-training")
+def suggested_training_for_athlete(
+    athlete_id: int,
+    current_user: User = Depends(require_role(UserRole.coach)),
+    db: Session = Depends(get_db),
+):
+    link = db.query(CoachAthlete).filter(
+        CoachAthlete.coach_id == current_user.id,
+        CoachAthlete.athlete_id == athlete_id,
+    ).first()
+    if not link:
+        raise HTTPException(status_code=403, detail="This athlete is not on your team")
+
+    athlete = db.query(Athlete).filter(Athlete.id == athlete_id).first()
+    videos = db.query(Video).filter(Video.athlete_id == athlete.id).order_by(Video.id.desc()).all()
+    video_ids = [v.id for v in videos]
+
+    latest_risk = (
+        db.query(RiskPrediction)
+        .filter(RiskPrediction.video_id.in_(video_ids))
+        .order_by(RiskPrediction.id.desc())
+        .first()
+        if video_ids else None
+    )
+
+    if not latest_risk:
+        return {"athlete_id": athlete.id, "has_risk_data": False, "training_suggestions": None}
+
+    suggestions = build_training_suggestions(
+        injury_type=latest_risk.injury_type,
+        risk_category=latest_risk.risk_category,
+        training_load=athlete.training_load,
+    )
+
+    return {"athlete_id": athlete.id, "has_risk_data": True, "training_suggestions": suggestions}
+
+
+@router.post("/coach/training-plan", response_model=TrainingPlanOut)
+def create_training_plan(
+    data: TrainingPlanCreate,
+    current_user: User = Depends(require_role(UserRole.coach)),
+    db: Session = Depends(get_db),
+):
+    link = db.query(CoachAthlete).filter(
+        CoachAthlete.coach_id == current_user.id,
+        CoachAthlete.athlete_id == data.athlete_id,
+    ).first()
+    if not link:
+        raise HTTPException(status_code=403, detail="This athlete is not on your team")
+
+    plan = TrainingPlan(
+        coach_id=current_user.id,
+        athlete_id=data.athlete_id,
+        suggestions_json=data.suggestions,
+        notes=data.notes,
+    )
+    db.add(plan)
+    db.commit()
+    db.refresh(plan)
+    return plan
+
+
+@router.get("/coach/athlete/{athlete_id}/training-plans", response_model=list[TrainingPlanOut])
+def list_training_plans(
+    athlete_id: int,
+    current_user: User = Depends(require_role(UserRole.coach)),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(TrainingPlan)
+        .filter(TrainingPlan.athlete_id == athlete_id, TrainingPlan.coach_id == current_user.id)
+        .order_by(TrainingPlan.id.desc())
+        .all()
+    )
+
+
+@router.put("/coach/training-plan/{plan_id}", response_model=TrainingPlanOut)
+def update_training_plan_status(
+    plan_id: int,
+    data: TrainingPlanUpdate,
+    current_user: User = Depends(require_role(UserRole.coach)),
+    db: Session = Depends(get_db),
+):
+    plan = db.query(TrainingPlan).filter(TrainingPlan.id == plan_id).first()
+    if not plan:
+        raise HTTPException(status_code=404, detail="Training plan not found")
+    if plan.coach_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not your training plan")
+
+    if data.status not in ("proposed", "applied", "reviewed"):
+        raise HTTPException(status_code=400, detail="Invalid status value")
+
+    plan.status = data.status
+    db.commit()
+    db.refresh(plan)
+    return plan
