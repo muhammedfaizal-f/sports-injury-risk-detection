@@ -1,15 +1,18 @@
 export const ROLE_CONFIG = {
-  athlete: {
-    label: 'Athlete',
-    homePath: '/dashboard',
-    navLinks: [
-      { key: 'overview', label: 'Overview', path: '/dashboard' },
-      { key: 'videos', label: 'Videos', path: '/videos' },
-      { key: 'progress', label: 'Progress', path: '/progress' },
-      { key: 'profile', label: 'My Profile', path: '/profile' },
-      { key: 'settings', label: 'Settings', path: '/settings' },
-    ],
-  },
+ athlete: {
+  label: 'Athlete',
+  homePath: '/dashboard',
+  navLinks: [
+    { key: 'overview', label: 'Overview', path: '/dashboard' },
+    { key: 'videos', label: 'Videos', path: '/videos' },
+    { key: 'progress', label: 'Progress', path: '/progress' },
+    { key: 'training', label: 'Training Guidance', path: '/training-guidance' },
+    { key: 'recovery', label: 'Recovery Guidance', path: '/recovery-guidance' },
+    { key: 'analytics', label: 'Analytics', path: '/analytics' },
+    { key: 'profile', label: 'My Profile', path: '/profile' },
+    { key: 'settings', label: 'Settings', path: '/settings' },
+  ],
+},
   coach: {
     label: 'Coach',
     homePath: '/coach-dashboard',

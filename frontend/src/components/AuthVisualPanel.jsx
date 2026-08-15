@@ -2,22 +2,38 @@ import { useState, useEffect } from 'react';
 import './AuthVisualPanel.css';
 
 const SLIDES = [
-{
-src:"/image/auth1.jpg",
-caption:"Detect injury risk before it happens."
-},
-{
-src:"/image/auth2.jpg",
-caption:"AI-powered pose estimation for every movement."
-},
-{
-src:"/image/auth3.jpg",
-caption:"Built for athletes, coaches and sports scientists."
-},
-{
-src:"/image/auth4.jpg",
-caption:"Train smarter. Reduce injuries. Improve performance."
-}
+  {
+    src: "/image/auth1.jpg",
+    caption: "Detect injury risk before it becomes a setback."
+  },
+  {
+    src: "/image/auth5.jpg",
+    caption: "Turn every movement into meaningful insights."
+  },
+  {
+    src: "/image/auth3.jpg",
+    caption: "Advanced movement analysis for better athletic performance."
+  },
+  {
+    src: "/image/auth6.jpg",
+    caption: "Understand movement. Identify risk. Perform better."
+  },
+  {
+    src: "/image/auth2.jpg",
+    caption: "AI-driven analysis designed for smarter training."
+  },
+  {
+    src: "/image/auth7.jpg",
+    caption: "Track biomechanics and uncover movement patterns."
+  },
+  {
+    src: "/image/auth4.jpg",
+    caption: "One platform for athletes, coaches and medical teams."
+  },
+  {
+    src: "/image/auth8.jpg",
+    caption: "Train with confidence. Perform with precision."
+  }
 ];
 
 export default function AuthVisualPanel() {

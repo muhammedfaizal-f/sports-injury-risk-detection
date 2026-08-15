@@ -6,15 +6,17 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import (
     User, UserRole, Athlete, CoachAthlete, Video, QualityReport, RiskPrediction,
-    RecoveryPlan, TrainingPlan, BiomechanicsResult,
+    RecoveryPlan, TrainingPlan, BiomechanicsResult, PoseResult, ActivityLog,
+    Organization, OrganizationMember, JoinCode,
 )
 from schemas import (
     LinkAthleteRequest, AthleteRiskSummary,
     RecoveryPlanCreate, RecoveryPlanUpdate, RecoveryPlanOut,
     TrainingPlanCreate, TrainingPlanUpdate, TrainingPlanOut,
-    AdminUserOut, AdminUserUpdate,
+    AdminUserOut, AdminUserUpdate, ActivityLogOut,
 )
 from dependencies import get_current_user, require_role
+from activity_log import log_activity
 from exercise_library import suggest_exercises
 from training_recommendations import build_training_suggestions
 from health_index import compute_overall_health, flag_joint_deviations
@@ -179,7 +181,7 @@ def physio_athlete_view(
         ],
     }
 
-    @router.get("/physio/athlete/{athlete_id}/suggested-exercises")
+@router.get("/physio/athlete/{athlete_id}/suggested-exercises")
 def suggested_exercises_for_athlete(
     athlete_id: int,
     current_user: User = Depends(require_role(UserRole.physiotherapist)),
@@ -232,6 +234,7 @@ def create_recovery_plan(
     db.add(plan)
     db.commit()
     db.refresh(plan)
+    log_activity(db, current_user.id, f"Physiotherapist created recovery plan #{plan.id}")
     return plan
 
 
@@ -303,18 +306,82 @@ def admin_overview(
     current_user: User = Depends(require_role(UserRole.admin)),
     db: Session = Depends(get_db),
 ):
-    role_counts = {}
-    for role in UserRole:
-        role_counts[role.value] = db.query(User).filter(User.role == role).count()
+    # Organizations created by this admin
+    organization_ids = [
+        org.id
+        for org in db.query(Organization)
+        .filter(Organization.created_by == current_user.id)
+        .all()
+    ]
 
-    total_videos = db.query(Video).count()
+    # No organization = completely fresh dashboard
+    if not organization_ids:
+        return {
+            "users_by_role": {
+                "athlete": 0,
+                "coach": 0,
+                "physiotherapist": 0,
+                "sports_scientist": 0,
+                "admin": 0,
+            },
+            "total_users": 0,
+            "total_videos": 0,
+            "videos_by_status": {},
+        }
+
+    # Users who joined this admin's organization
+    member_user_ids = [
+        user_id
+        for (user_id,) in db.query(OrganizationMember.user_id)
+        .filter(
+            OrganizationMember.organization_id.in_(organization_ids)
+        )
+        .distinct()
+        .all()
+    ]
+
+    # Count roles
+    role_counts = {}
+
+    for role in UserRole:
+        role_counts[role.value] = (
+            db.query(User)
+            .filter(
+                User.id.in_(member_user_ids),
+                User.role == role,
+            )
+            .count()
+        )
+
+    # Athletes belonging to this organization
+    athlete_ids = [
+        athlete.id
+        for athlete in db.query(Athlete)
+        .filter(Athlete.user_id.in_(member_user_ids))
+        .all()
+    ]
+
+    # Videos belonging to those athletes
+    videos = []
+
+    if athlete_ids:
+        videos = (
+            db.query(Video)
+            .filter(Video.athlete_id.in_(athlete_ids))
+            .all()
+        )
+
+    # Pipeline status
     status_counts = {}
-    for v in db.query(Video).all():
-        status_counts[v.status] = status_counts.get(v.status, 0) + 1
+
+    for video in videos:
+        status = video.status or "unknown"
+        status_counts[status] = status_counts.get(status, 0) + 1
 
     return {
         "users_by_role": role_counts,
-        "total_videos": total_videos,
+        "total_users": len(member_user_ids),
+        "total_videos": len(videos),
         "videos_by_status": status_counts,
     }
     
@@ -377,6 +444,7 @@ def create_training_plan(
     db.add(plan)
     db.commit()
     db.refresh(plan)
+    log_activity(db, current_user.id, f"Coach created training plan #{plan.id}")
     return plan
 
 
@@ -415,11 +483,31 @@ def update_training_plan_status(
     db.refresh(plan)
     return plan
 
-    def _to_admin_user_out(user: User, db: Session) -> AdminUserOut:
+def _to_admin_user_out(user: User, db: Session) -> AdminUserOut:
     athlete = db.query(Athlete).filter(Athlete.user_id == user.id).first()
     videos_uploaded = None
     if athlete:
         videos_uploaded = db.query(Video).filter(Video.athlete_id == athlete.id).count()
+
+    # Which organization did they join, and via which code?
+    membership = (
+        db.query(OrganizationMember)
+        .filter(OrganizationMember.user_id == user.id)
+        .order_by(OrganizationMember.id.desc())
+        .first()
+    )
+    organization_name = None
+    if membership:
+        org = db.query(Organization).filter(Organization.id == membership.organization_id).first()
+        organization_name = org.name if org else None
+
+    used_code = (
+        db.query(JoinCode)
+        .filter(JoinCode.used_by == user.id)
+        .order_by(JoinCode.id.desc())
+        .first()
+    )
+    joined_via_code = used_code.code if used_code else None
 
     return AdminUserOut(
         id=user.id,
@@ -432,6 +520,8 @@ def update_training_plan_status(
         created_at=user.created_at,
         athlete_id=athlete.id if athlete else None,
         videos_uploaded=videos_uploaded,
+        organization_name=organization_name,
+        joined_via_code=joined_via_code,
     )
 
 
@@ -442,20 +532,54 @@ def admin_list_users(
     current_user: User = Depends(require_role(UserRole.admin)),
     db: Session = Depends(get_db),
 ):
-    query = db.query(User)
+    # Organizations created by this admin
+    organization_ids = [
+        org.id
+        for org in db.query(Organization)
+        .filter(Organization.created_by == current_user.id)
+        .all()
+    ]
 
+    if not organization_ids:
+        return []
+
+    # Only members of this admin's organizations
+    member_user_ids = [
+        user_id
+        for (user_id,) in db.query(OrganizationMember.user_id)
+        .filter(
+            OrganizationMember.organization_id.in_(organization_ids)
+        )
+        .distinct()
+        .all()
+    ]
+
+    if not member_user_ids:
+        return []
+
+    query = db.query(User).filter(
+        User.id.in_(member_user_ids)
+    )
+
+    # Role filter
     if role and role != "all":
         query = query.filter(User.role == role)
 
+    # Search filter
     if search:
         like_pattern = f"%{search}%"
+
         query = query.filter(
-            (User.full_name.ilike(like_pattern)) | (User.email.ilike(like_pattern))
+            (User.full_name.ilike(like_pattern)) |
+            (User.email.ilike(like_pattern))
         )
 
     users = query.order_by(User.id.desc()).all()
-    return [_to_admin_user_out(u, db) for u in users]
 
+    return [
+        _to_admin_user_out(user, db)
+        for user in users
+    ]
 
 @router.get("/admin/users/{user_id}", response_model=AdminUserOut)
 def admin_get_user(
@@ -638,3 +762,160 @@ def export_research_report_excel(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=research_report.xlsx"},
     )
+
+@router.get("/admin/system-monitoring")
+def system_monitoring(
+    current_user: User = Depends(require_role(UserRole.admin)),
+    db: Session = Depends(get_db),
+):
+    """
+    Show pipeline monitoring only for videos belonging to
+    athletes who joined organizations created by this admin.
+    """
+
+    # 1. Get organizations created by the logged-in admin
+    organization_ids = [
+        org.id
+        for org in db.query(Organization)
+        .filter(Organization.created_by == current_user.id)
+        .all()
+    ]
+
+    # Fresh admin = no organizations = no pipeline data
+    if not organization_ids:
+        return {
+            "total_videos": 0,
+            "videos_by_status": {
+                "uploaded": 0,
+                "processed": 0,
+                "pose_estimated": 0,
+                "biomechanics_analyzed": 0,
+                "analyzed": 0,
+                "risk_predicted": 0,
+                "invalid": 0,
+            },
+            "pose_estimations_completed": 0,
+            "biomechanics_completed": 0,
+            "risk_predictions_completed": 0,
+            "failed_analyses": 0,
+        }
+
+    # 2. Get users who joined this admin's organizations
+    member_user_ids = [
+        user_id
+        for (user_id,) in db.query(OrganizationMember.user_id)
+        .filter(
+            OrganizationMember.organization_id.in_(organization_ids)
+        )
+        .distinct()
+        .all()
+    ]
+
+    if not member_user_ids:
+        return {
+            "total_videos": 0,
+            "videos_by_status": {
+                "uploaded": 0,
+                "processed": 0,
+                "pose_estimated": 0,
+                "biomechanics_analyzed": 0,
+                "analyzed": 0,
+                "risk_predicted": 0,
+                "invalid": 0,
+            },
+            "pose_estimations_completed": 0,
+            "biomechanics_completed": 0,
+            "risk_predictions_completed": 0,
+            "failed_analyses": 0,
+        }
+
+    # 3. Get athletes belonging to those organization members
+    athlete_ids = [
+        athlete.id
+        for athlete in db.query(Athlete)
+        .filter(Athlete.user_id.in_(member_user_ids))
+        .all()
+    ]
+
+    if not athlete_ids:
+        return {
+            "total_videos": 0,
+            "videos_by_status": {
+                "uploaded": 0,
+                "processed": 0,
+                "pose_estimated": 0,
+                "biomechanics_analyzed": 0,
+                "analyzed": 0,
+                "risk_predicted": 0,
+                "invalid": 0,
+            },
+            "pose_estimations_completed": 0,
+            "biomechanics_completed": 0,
+            "risk_predictions_completed": 0,
+            "failed_analyses": 0,
+        }
+
+    # 4. Get ONLY videos belonging to those athletes
+    all_videos = (
+        db.query(Video)
+        .filter(Video.athlete_id.in_(athlete_ids))
+        .all()
+    )
+
+    video_ids = [video.id for video in all_videos]
+
+    # 5. Pipeline status
+    funnel = {
+        "uploaded": 0,
+        "processed": 0,
+        "pose_estimated": 0,
+        "biomechanics_analyzed": 0,
+        "analyzed": 0,
+        "risk_predicted": 0,
+        "invalid": 0,
+    }
+
+    for video in all_videos:
+        status = video.status or "unknown"
+
+        if status in funnel:
+            funnel[status] += 1
+
+    # 6. Count only analysis records for this admin's videos
+    pose_count = (
+        db.query(PoseResult)
+        .filter(PoseResult.video_id.in_(video_ids))
+        .count()
+        if video_ids else 0
+    )
+
+    biomechanics_count = (
+        db.query(BiomechanicsResult)
+        .filter(BiomechanicsResult.video_id.in_(video_ids))
+        .count()
+        if video_ids else 0
+    )
+
+    risk_count = (
+        db.query(RiskPrediction)
+        .filter(RiskPrediction.video_id.in_(video_ids))
+        .count()
+        if video_ids else 0
+    )
+
+    return {
+        "total_videos": len(all_videos),
+        "videos_by_status": funnel,
+        "pose_estimations_completed": pose_count,
+        "biomechanics_completed": biomechanics_count,
+        "risk_predictions_completed": risk_count,
+        "failed_analyses": funnel["invalid"],
+    }
+
+@router.get("/admin/activity", response_model=list[ActivityLogOut])
+def activity_log(
+    limit: int = 50,
+    current_user: User = Depends(require_role(UserRole.admin)),
+    db: Session = Depends(get_db),
+):
+    return db.query(ActivityLog).order_by(ActivityLog.id.desc()).limit(limit).all()

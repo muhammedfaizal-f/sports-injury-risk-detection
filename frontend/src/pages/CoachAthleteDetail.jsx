@@ -193,7 +193,12 @@ export default function CoachAthleteDetail() {
             <table className="role-table">
               <thead><tr><th>Video</th><th>Quality Score</th></tr></thead>
               <tbody>
-                {data.quality_history.map((q) => (<tr key={q.video_id}><td>#{q.video_id}</td><td>{q.score} / 100</td></tr>))}
+                {data.quality_history.map((q, index) => (
+                  <tr key={q.video_id}>
+                    <td>#{index + 1}</td>
+                    <td>{q.score} / 100</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           )}

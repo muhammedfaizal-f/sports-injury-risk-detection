@@ -153,5 +153,39 @@ ALTER TABLE athletes DROP CONSTRAINT athletes_user_id_fkey;
 ALTER TABLE athletes ADD CONSTRAINT athletes_user_id_fkey
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
+CREATE TABLE organizations (
+    id              SERIAL PRIMARY KEY,
+    name            VARCHAR(150) NOT NULL,
+    created_by      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE organization_members (
+    id                  SERIAL PRIMARY KEY,
+    organization_id     INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id             INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role                user_role NOT NULL,
+    joined_at           TIMESTAMP DEFAULT NOW(),
+    UNIQUE (organization_id, user_id)
+);
+
+CREATE TABLE join_codes (
+    id                  SERIAL PRIMARY KEY,
+    code                VARCHAR(4) NOT NULL,
+    organization_id     INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    admin_id            INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at          TIMESTAMP NOT NULL,
+    used                BOOLEAN DEFAULT FALSE,
+    used_by             INTEGER REFERENCES users(id),
+    created_at          TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX idx_join_codes_code ON join_codes(code);
+
+CREATE TABLE activity_logs (
+    id              SERIAL PRIMARY KEY,
+    user_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action          VARCHAR(255) NOT NULL,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
 -- repeat the same pattern for biomechanics_results, quality_reports, risk_predictions
 -- if their constraint names differ, get the real name from the SELECT above first

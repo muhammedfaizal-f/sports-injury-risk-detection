@@ -4,13 +4,23 @@ import shutil
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Form
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Video, PoseResult, BiomechanicsResult, QualityReport, Athlete, User, UserRole
+from models import (
+    Video,
+    PoseResult,
+    BiomechanicsResult,
+    QualityReport,
+    RiskPrediction,
+    Athlete,
+    User,
+    UserRole,
+)
 from schemas import VideoOut, PoseResultOut, BiomechanicsResultOut
 from dependencies import get_current_user
 from video_processing import get_video_metadata, validate_video, extract_frames
 from pose_estimation import estimate_pose_on_frames, save_annotated_sample
 from biomechanics import analyze_pose_sequence
 from movement_quality import compute_quality_score, generate_recommendations
+from activity_log import log_activity
 
 # Display labels + reference max angle for each joint, used to shape the
 # /report response into exactly what the frontend Analysis page expects.
@@ -82,6 +92,7 @@ def upload_video(
     db.add(video)
     db.commit()
     db.refresh(video)
+    log_activity(db, current_user.id, f"Athlete uploaded video #{video.id}")
     return video
 
 
@@ -493,28 +504,65 @@ def delete_video(
     db: Session = Depends(get_db),
 ):
     """
-    Deletes a video and all its derived data. Database rows for pose_results,
-    biomechanics_results, quality_reports, and risk_predictions are removed
-    automatically via ON DELETE CASCADE (already set up in db/schema.sql).
-    This endpoint additionally cleans up the actual files on disk, which the
-    DB cascade can't do.
+    Delete a video and all related analysis data.
     """
+
     video = _get_owned_video(video_id, current_user, db)
 
-    # Best-effort file cleanup — a missing file shouldn't block the delete
     try:
+        # Delete related analysis records first
+        db.query(RiskPrediction).filter(
+            RiskPrediction.video_id == video.id
+        ).delete(synchronize_session=False)
+
+        db.query(QualityReport).filter(
+            QualityReport.video_id == video.id
+        ).delete(synchronize_session=False)
+
+        db.query(BiomechanicsResult).filter(
+            BiomechanicsResult.video_id == video.id
+        ).delete(synchronize_session=False)
+
+        db.query(PoseResult).filter(
+            PoseResult.video_id == video.id
+        ).delete(synchronize_session=False)
+
+        # Delete actual uploaded video file
         if video.file_path and os.path.exists(video.file_path):
-            os.remove(video.file_path)
-    except OSError:
-        pass
+            try:
+                os.remove(video.file_path)
+            except OSError:
+                pass
 
-    frames_dir = os.path.join(FRAMES_DIR, f"video_{video.id}")
-    annotated_dir = os.path.join(FRAMES_DIR, f"video_{video.id}_annotated")
-    for directory in (frames_dir, annotated_dir):
-        if os.path.isdir(directory):
-            shutil.rmtree(directory, ignore_errors=True)
+        # Delete extracted frames
+        frames_dir = os.path.join(
+            FRAMES_DIR,
+            f"video_{video.id}"
+        )
 
-    db.delete(video)
-    db.commit()
+        annotated_dir = os.path.join(
+            FRAMES_DIR,
+            f"video_{video.id}_annotated"
+        )
 
-    return {"message": f"Video {video_id} deleted"}
+        if os.path.isdir(frames_dir):
+            shutil.rmtree(frames_dir, ignore_errors=True)
+
+        if os.path.isdir(annotated_dir):
+            shutil.rmtree(annotated_dir, ignore_errors=True)
+
+        # Finally delete the video
+        db.delete(video)
+        db.commit()
+
+        return {
+            "message": f"Video {video_id} deleted successfully"
+        }
+
+    except Exception as e:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to delete video: {str(e)}"
+        )
