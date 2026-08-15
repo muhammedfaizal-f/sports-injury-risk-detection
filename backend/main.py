@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from routers import auth, athletes, videos, risk, dashboard, reports, invites, users
+from routers import auth, athletes, videos, risk, dashboard, reports, invites, users, organizations
 
 os.makedirs("uploads/avatars", exist_ok=True)
 
@@ -26,6 +26,7 @@ app.include_router(risk.router)
 app.include_router(dashboard.router)
 app.include_router(reports.router)
 app.include_router(invites.router)
+app.include_router(organizations.router)
 
 
 @app.get("/")

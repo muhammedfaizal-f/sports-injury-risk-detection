@@ -141,7 +141,9 @@ export default function VideoUpload() {
             {videos.map((v, i) => (
               <div className="video-row stagger" style={{ '--delay': `${i * 0.05}s` }} key={v.id}>
                 <div className="video-row-info">
-                  <span className="video-activity">{v.activity_type}</span>
+                  <span className="video-activity">
+                    Video #{i + 1} — {v.activity_type}
+                  </span>
                   <span className={`video-status ${STATUS_STYLES[v.status] || ''}`}>{v.status}</span>
                 </div>
 

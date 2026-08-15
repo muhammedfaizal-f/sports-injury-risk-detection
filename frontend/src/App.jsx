@@ -16,6 +16,10 @@ import CoachAthleteDetail from './pages/CoachAthleteDetail';
 import PhysioDashboard from './pages/PhysioDashboard';
 import ScientistDashboard from './pages/ScientistDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import TrainingGuidance from './pages/TrainingGuidance';
+import RecoveryGuidance from './pages/RecoveryGuidance';
+import AthleteAnalytics from './pages/AthleteAnalytics';
+import JoinOrganization from './pages/JoinOrganization';
 import { decodeToken } from './utils/auth';
 import { getRoleConfig } from './utils/roleConfig';
 
@@ -74,6 +78,9 @@ function AnimatedRoutes() {
         <Route path="/analysis" element={<RoleRoute allow={['athlete']}><Analysis /></RoleRoute>} />
         <Route path="/risk" element={<RoleRoute allow={['athlete']}><RiskReport /></RoleRoute>} />
         <Route path="/reports" element={<RoleRoute allow={['athlete']}><Reports /></RoleRoute>} />
+        <Route path="/training-guidance" element={<RoleRoute allow={['athlete']}><TrainingGuidance /></RoleRoute>} />
+        <Route path="/recovery-guidance" element={<RoleRoute allow={['athlete']}><RecoveryGuidance /></RoleRoute>} />
+        <Route path="/analytics" element={<RoleRoute allow={['athlete']}><AthleteAnalytics /></RoleRoute>} />
 
         {/* Coach-only */}
         <Route path="/coach-dashboard" element={<RoleRoute allow={['coach']}><CoachDashboard /></RoleRoute>} />
@@ -88,7 +95,7 @@ function AnimatedRoutes() {
 
         {/* Admin-only */}
         <Route path="/admin-dashboard" element={<RoleRoute allow={['admin']}><AdminDashboard /></RoleRoute>} />
-
+        <Route path="/join" element={<RoleRoute allow={['athlete']}><JoinOrganization /></RoleRoute>} />
         {/* Shared by every role */}
         <Route path="/settings" element={<AnyLoggedInRoute><Settings /></AnyLoggedInRoute>} />
       </Routes>

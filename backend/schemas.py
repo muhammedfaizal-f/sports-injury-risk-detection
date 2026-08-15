@@ -223,6 +223,8 @@ class AdminUserOut(BaseModel):
     created_at: Optional[datetime] = None
     athlete_id: Optional[int] = None
     videos_uploaded: Optional[int] = None
+    organization_name: Optional[str] = None
+    joined_via_code: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -232,3 +234,54 @@ class AdminUserUpdate(BaseModel):
     full_name: Optional[str] = None
     role: Optional[UserRole] = None
     is_active: Optional[bool] = None
+
+class OrganizationCreate(BaseModel):
+    name: str
+
+
+class OrganizationOut(BaseModel):
+    id: int
+    name: str
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class OrgMemberOut(BaseModel):
+    user_id: int
+    full_name: str
+    email: EmailStr
+    role: UserRole
+    joined_at: Optional[datetime] = None
+
+
+class JoinCodeCreate(BaseModel):
+    organization_id: int
+    role: UserRole  # which role this code grants membership as
+
+
+class JoinCodeOut(BaseModel):
+    id: int
+    code: str
+    organization_id: int
+    expires_at: datetime
+    used: bool
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class JoinCodeVerify(BaseModel):
+    code: str
+
+
+class ActivityLogOut(BaseModel):
+    id: int
+    user_id: Optional[int] = None
+    action: str
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

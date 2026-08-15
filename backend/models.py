@@ -4,6 +4,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
+import secrets
+from datetime import datetime, timedelta
 
 
 class UserRole(str, enum.Enum):
@@ -12,6 +14,54 @@ class UserRole(str, enum.Enum):
     physiotherapist = "physiotherapist"
     sports_scientist = "sports_scientist"
     admin = "admin"
+
+
+class Organization(Base):
+    __tablename__ = "organizations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(150), nullable=False)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class OrganizationMember(Base):
+    __tablename__ = "organization_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    role = Column(Enum(UserRole), nullable=False)
+    joined_at = Column(DateTime, server_default=func.now())
+
+
+class JoinCode(Base):
+    __tablename__ = "join_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(4), nullable=False, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=False)
+    admin_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Boolean, default=False)
+    used_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class ActivityLog(Base):
+    __tablename__ = "activity_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    action = Column(String(255), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+
+def generate_join_code() -> str:
+    """4-digit numeric code, zero-padded (e.g. '0042')."""
+    return f"{secrets.randbelow(10000):04d}"
+
+
 
 
 class User(Base):

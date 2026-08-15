@@ -84,11 +84,11 @@ export default function Dashboard() {
   })();
 
   const quickActions = [
-    { icon: '🎥', label: 'Upload Video', path: '/videos' },
-    { icon: '📈', label: 'View Progress', path: '/progress' },
-    { icon: '⚠️', label: 'Latest Risk Report', path: analyzedVideos.length ? `/risk?video=${analyzedVideos[analyzedVideos.length - 1].id}` : '/videos' },
-    { icon: '⚙️', label: 'Settings', path: '/settings' },
-  ];
+  { icon: '🎥', label: 'Upload Video', path: '/videos' },
+  { icon: '📈', label: 'View Progress', path: '/progress' },
+  { icon: '⚠️', label: 'Latest Risk Report', path: analyzedVideos.length ? `/risk?video=${analyzedVideos[analyzedVideos.length - 1].id}` : '/videos' },
+  { icon: '🔑', label: 'Join Organization', path: '/join' },
+];
 
   return (
     <div className="dashboard-page">
