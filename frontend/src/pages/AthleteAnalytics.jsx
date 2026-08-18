@@ -74,7 +74,7 @@ export default function AthleteAnalytics() {
           <div className="role-stat-item"><span className="role-stat-value">{data.health_score}</span><span className="role-stat-label">Health Score</span></div>
           <div className="role-stat-item">
             <span className={`health-pill health-${data.health_category}`}>{HEALTH_LABELS[data.health_category]}</span>
-            <span className="role-stat-label">Status</span>
+            <span className="role-stat-label1">Status</span>
           </div>
         </div>
 

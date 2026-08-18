@@ -101,7 +101,7 @@ export default function Settings() {
   if (!user) {
     return (
       <div className="settings-page">
-        <Topbar activePage="profile" userName="Loading..." />
+        <Topbar activePage="settings" userName="Loading..." />
         <main className="settings-main"><div className="settings-card skeleton" style={{ height: 300 }} /></main>
       </div>
     );
@@ -111,7 +111,7 @@ export default function Settings() {
 
   return (
     <div className="settings-page">
-      <Topbar activePage="profile" userName={user.full_name} />
+      <Topbar activePage="settings" userName={user.full_name} />
 
       <main className="settings-main">
         <div className="settings-header fade-in-up">

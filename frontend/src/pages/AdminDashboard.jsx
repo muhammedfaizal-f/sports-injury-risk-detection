@@ -103,11 +103,26 @@ export default function AdminDashboard() {
     }
   };
 
-  const codeStatus = (code) => {
-    if (code.used) return 'used';
-    if (new Date(code.expires_at) < new Date()) return 'expired';
-    return 'active';
-  };
+ const getExpiryDate = (value) => {
+  if (!value) return null;
+
+  // Backend stores UTC datetime without timezone information
+  return new Date(
+    value.endsWith('Z') ? value : `${value}Z`
+  );
+};
+
+const codeStatus = (code) => {
+  if (code.used) return 'used';
+
+  const expiryDate = getExpiryDate(code.expires_at);
+
+  if (expiryDate && expiryDate < new Date()) {
+    return 'expired';
+  }
+
+  return 'active';
+};
 
   const handleRoleChange = async (user, newRole) => {
     try {
@@ -314,7 +329,7 @@ export default function AdminDashboard() {
                 {joinCodes.map((c) => (
                   <tr key={c.id}>
                     <td className="join-code-cell">{c.code}</td>
-                    <td>{new Date(c.expires_at).toLocaleTimeString()}</td>
+                  <td>{getExpiryDate(c.expires_at)?.toLocaleTimeString()}</td>
                     <td><span className={`code-status code-status-${codeStatus(c)}`}>{codeStatus(c)}</span></td>
                   </tr>
                 ))}

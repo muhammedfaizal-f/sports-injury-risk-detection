@@ -50,10 +50,17 @@
     font-size: 1.6rem;
     font-weight: 700;
 }
-
 .role-stat-label {
-    font-size: 0.78rem;
+    
+    font-size: 0.98rem;
     color: var(--text-secondary);
+}
+
+.role-stat-label1 {
+    
+    font-size: 0.98rem;
+    color: var(--text-secondary);
+    margin-left: 12px;
 }
 
 .role-panel {
@@ -444,11 +451,13 @@
 }
 
 .health-pill {
-    padding: 0.15rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
+  display: inline-flex;
+  width: fit-content;
+  max-width: max-content;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  align-items: center;
+  text-transform: uppercase;
 }
 
 .health-excellent {
