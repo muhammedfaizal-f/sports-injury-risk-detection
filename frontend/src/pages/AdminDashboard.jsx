@@ -103,26 +103,26 @@ export default function AdminDashboard() {
     }
   };
 
- const getExpiryDate = (value) => {
-  if (!value) return null;
+  const getExpiryDate = (value) => {
+    if (!value) return null;
 
-  // Backend stores UTC datetime without timezone information
-  return new Date(
-    value.endsWith('Z') ? value : `${value}Z`
-  );
-};
+    // Backend stores UTC datetime without timezone information
+    return new Date(
+      value.endsWith('Z') ? value : `${value}Z`
+    );
+  };
 
-const codeStatus = (code) => {
-  if (code.used) return 'used';
+  const codeStatus = (code) => {
+    if (code.used) return 'used';
 
-  const expiryDate = getExpiryDate(code.expires_at);
+    const expiryDate = getExpiryDate(code.expires_at);
 
-  if (expiryDate && expiryDate < new Date()) {
-    return 'expired';
-  }
+    if (expiryDate && expiryDate < new Date()) {
+      return 'expired';
+    }
 
-  return 'active';
-};
+    return 'active';
+  };
 
   const handleRoleChange = async (user, newRole) => {
     try {
@@ -165,7 +165,7 @@ const codeStatus = (code) => {
             <div className="role-stat-item"><span className="role-stat-value"><AnimatedCounter value={totalUsers} /></span><span className="role-stat-label">Total Users</span></div>
             <div className="role-stat-item"><span className="role-stat-value"><AnimatedCounter value={overview.total_videos} /></span><span className="role-stat-label">Total Videos</span></div>
             <div className="role-stat-item"><span className="role-stat-value">{overview.users_by_role.athlete || 0}</span><span className="role-stat-label">Athletes</span></div>
-            <div className="role-stat-item"><span className="role-stat-value">{overview.users_by_role.coach || 0}</span><span className="role-stat-label">Coaches</span></div>
+           {/*  <div className="role-stat-item"><span className="role-stat-value">{overview.users_by_role.coach || 0}</span><span className="role-stat-label">Coaches</span></div> */}
           </div>
         )}
 
@@ -311,9 +311,9 @@ const codeStatus = (code) => {
             </select>
             <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
               <option value="athlete">Athlete</option>
-              <option value="coach">Coach</option>
+              {/* <option value="coach">Coach</option>
               <option value="physiotherapist">Physiotherapist</option>
-              <option value="sports_scientist">Sports Scientist</option>
+              <option value="sports_scientist">Sports Scientist</option> */}
             </select>
             <button onClick={handleGenerateCode} disabled={generatingCode}>
               {generatingCode ? <span className="spinner" /> : 'Generate Code'}
@@ -329,7 +329,7 @@ const codeStatus = (code) => {
                 {joinCodes.map((c) => (
                   <tr key={c.id}>
                     <td className="join-code-cell">{c.code}</td>
-                  <td>{getExpiryDate(c.expires_at)?.toLocaleTimeString()}</td>
+                    <td>{getExpiryDate(c.expires_at)?.toLocaleTimeString()}</td>
                     <td><span className={`code-status code-status-${codeStatus(c)}`}>{codeStatus(c)}</span></td>
                   </tr>
                 ))}

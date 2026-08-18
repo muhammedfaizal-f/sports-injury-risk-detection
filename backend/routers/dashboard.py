@@ -298,6 +298,23 @@ def sports_scientist_overview(
         "injury_type_distribution": injury_type_counts,
     }
 
+@router.get("/physio/athletes/search")
+def physio_search_athletes(
+    name: str = "",
+    current_user: User = Depends(require_role(UserRole.physiotherapist)),
+    db: Session = Depends(get_db),
+):
+    """Search athletes by name — used to populate the name-based lookup instead of raw IDs."""
+    query = db.query(Athlete)
+    if name:
+        query = query.join(User, Athlete.user_id == User.id).filter(User.full_name.ilike(f"%{name}%"))
+
+    athletes = query.limit(10).all()
+    return [
+        {"athlete_id": a.id, "full_name": a.user.full_name, "sport_type": a.sport_type}
+        for a in athletes
+    ]
+
 
 # ---------- ADMIN ----------
 

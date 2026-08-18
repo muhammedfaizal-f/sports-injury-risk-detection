@@ -6,7 +6,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.9rem 1.75rem;
-  background-color: rgba(19, 27, 44, 0.85);
+
+  /* Theme-aware background */
+  background-color: var(--bg-secondary);
+
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
 }

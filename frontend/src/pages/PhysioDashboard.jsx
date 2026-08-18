@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Topbar from '../components/Topbar';
 import EmptyState from '../components/EmptyState';
 import api from '../api';
@@ -9,42 +9,76 @@ const STATUS_LABELS = { not_started: 'Not Started', in_progress: 'In Progress', 
 const STATUS_ORDER = ['not_started', 'in_progress', 'completed'];
 
 export default function PhysioDashboard() {
-  const [athleteId, setAthleteId] = useState('');
+  const [nameQuery, setNameQuery] = useState('');
+  const [matches, setMatches] = useState([]);
+  const [showMatches, setShowMatches] = useState(false);
+  const [searching, setSearching] = useState(false);
+
+  const [selectedAthleteId, setSelectedAthleteId] = useState(null);
   const [data, setData] = useState(null);
   const [suggested, setSuggested] = useState(null);
   const [plans, setPlans] = useState([]);
   const [selectedExercises, setSelectedExercises] = useState([]);
   const [notes, setNotes] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loadingAthlete, setLoadingAthlete] = useState(false);
   const [creatingPlan, setCreatingPlan] = useState(false);
   const { showToast } = useToast();
+  const searchBoxRef = useRef(null);
 
-  const loadPlans = (id) => {
-    api.get(`/dashboard/physio/athlete/${id}/recovery-plans`)
+  // Debounced name search as the physio types
+  useEffect(() => {
+    if (!nameQuery.trim()) {
+      setMatches([]);
+      return;
+    }
+    setSearching(true);
+    const timer = setTimeout(() => {
+      api.get('/dashboard/physio/athletes/search', { params: { name: nameQuery } })
+        .then((res) => setMatches(res.data))
+        .catch(() => setMatches([]))
+        .finally(() => setSearching(false));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [nameQuery]);
+
+  // Close the dropdown when clicking outside it
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target)) {
+        setShowMatches(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const loadPlans = (athleteId) => {
+    api.get(`/dashboard/physio/athlete/${athleteId}/recovery-plans`)
       .then((res) => setPlans(res.data))
       .catch(() => setPlans([]));
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!athleteId) return;
-    setLoading(true);
+  const selectAthlete = async (athlete) => {
+    setNameQuery(athlete.full_name);
+    setShowMatches(false);
+    setSelectedAthleteId(athlete.athlete_id);
     setData(null);
     setSuggested(null);
     setSelectedExercises([]);
     setNotes('');
+    setLoadingAthlete(true);
     try {
       const [athleteRes, suggestedRes] = await Promise.all([
-        api.get(`/dashboard/physio/athlete/${athleteId}`),
-        api.get(`/dashboard/physio/athlete/${athleteId}/suggested-exercises`),
+        api.get(`/dashboard/physio/athlete/${athlete.athlete_id}`),
+        api.get(`/dashboard/physio/athlete/${athlete.athlete_id}/suggested-exercises`),
       ]);
       setData(athleteRes.data);
       setSuggested(suggestedRes.data);
-      loadPlans(athleteId);
+      loadPlans(athlete.athlete_id);
     } catch (err) {
-      showToast(err.response?.data?.detail || 'Athlete not found', 'error');
+      showToast(err.response?.data?.detail || 'Could not load athlete', 'error');
     } finally {
-      setLoading(false);
+      setLoadingAthlete(false);
     }
   };
 
@@ -63,14 +97,14 @@ export default function PhysioDashboard() {
     setCreatingPlan(true);
     try {
       await api.post('/dashboard/physio/recovery-plan', {
-        athlete_id: Number(athleteId),
+        athlete_id: selectedAthleteId,
         exercises: selectedExercises,
         notes: notes || null,
       });
       showToast('Recovery plan created', 'success');
       setSelectedExercises([]);
       setNotes('');
-      loadPlans(athleteId);
+      loadPlans(selectedAthleteId);
     } catch (err) {
       showToast(err.response?.data?.detail || 'Could not create plan', 'error');
     } finally {
@@ -85,7 +119,7 @@ export default function PhysioDashboard() {
     try {
       await api.put(`/dashboard/physio/recovery-plan/${plan.id}`, { status: nextStatus });
       showToast(`Plan marked as ${STATUS_LABELS[nextStatus]}`, 'success');
-      loadPlans(athleteId);
+      loadPlans(selectedAthleteId);
     } catch (err) {
       showToast(err.response?.data?.detail || 'Could not update plan', 'error');
     }
@@ -97,24 +131,47 @@ export default function PhysioDashboard() {
       <main className="role-main">
         <div className="role-header fade-in-up">
           <h1>Rehabilitation Tracking</h1>
-          <p className="role-subtitle">Look up an athlete, review their movement data, and assign a recovery plan.</p>
+          <p className="role-subtitle">Search an athlete by name to review their movement data and assign a recovery plan.</p>
         </div>
 
         <div className="role-panel fade-in-up stagger" style={{ '--delay': '0.05s' }}>
-          <form className="link-form" onSubmit={handleSearch}>
+          <div className="name-search-box" ref={searchBoxRef}>
             <input
-              type="number"
-              placeholder="Athlete ID"
-              value={athleteId}
-              onChange={(e) => setAthleteId(e.target.value)}
+              type="text"
+              placeholder="Search athlete by name..."
+              value={nameQuery}
+              onChange={(e) => {
+                setNameQuery(e.target.value);
+                setShowMatches(true);
+              }}
+              onFocus={() => setShowMatches(true)}
             />
-            <button type="submit" disabled={loading}>
-              {loading ? <span className="spinner" /> : 'View Athlete'}
-            </button>
-          </form>
+            {showMatches && nameQuery.trim() && (
+              <div className="name-search-dropdown">
+                {searching ? (
+                  <div className="name-search-item name-search-loading"><span className="spinner" /> Searching...</div>
+                ) : matches.length === 0 ? (
+                  <div className="name-search-item name-search-empty">No athletes found</div>
+                ) : (
+                  matches.map((a) => (
+                    <button
+                      key={a.athlete_id}
+                      className="name-search-item"
+                      onClick={() => selectAthlete(a)}
+                    >
+                      <span className="name-search-name">{a.full_name}</span>
+                      {a.sport_type && <span className="name-search-sport">{a.sport_type}</span>}
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
-        {data && (
+        {loadingAthlete && <div className="role-panel skeleton" style={{ height: 200 }} />}
+
+        {!loadingAthlete && data && (
           <>
             <div className="role-stat-strip fade-in-up stagger" style={{ '--delay': '0.1s' }}>
               <div className="role-stat-item"><span className="role-stat-value">{data.full_name}</span><span className="role-stat-label">Athlete</span></div>
